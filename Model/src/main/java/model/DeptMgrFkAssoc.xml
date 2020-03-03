@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="windows-1256" ?>
+<!DOCTYPE Association SYSTEM "jbo_03_01.dtd">
+<!---->
+<Association
+  xmlns="http://xmlns.oracle.com/bc4j"
+  Name="DeptMgrFkAssoc"
+  Version="12.2.1.9.14"
+  InheritPersonalization="merge">
+  <DesignTime>
+    <Attr Name="_isCodegen" Value="true"/>
+  </DesignTime>
+  <AssociationEnd
+    Name="EmployeesEntity1"
+    Cardinality="1"
+    Source="true"
+    Owner="model.EmployeesEntity">
+    <DesignTime>
+      <Attr Name="_isUpdateable" Value="true"/>
+      <Attr Name="_aggregation" Value="0"/>
+      <Attr Name="_finderName" Value="EmployeesEntity1"/>
+      <Attr Name="_foreignKey" Value="model.EmployeesEntity.EmpEmpIdPk"/>
+    </DesignTime>
+    <AttrArray Name="Attributes">
+      <Item Value="model.EmployeesEntity.EmployeeId"/>
+    </AttrArray>
+  </AssociationEnd>
+  <AssociationEnd
+    Name="DepartmentsEntity1"
+    Cardinality="-1"
+    Owner="model.DepartmentsEntity">
+    <DesignTime>
+      <Attr Name="_isUpdateable" Value="true"/>
+      <Attr Name="_aggregation" Value="0"/>
+      <Attr Name="_finderName" Value="DepartmentsEntity1"/>
+      <Attr Name="_foreignKey" Value="model.DepartmentsEntity.DeptMgrFk"/>
+    </DesignTime>
+    <AttrArray Name="Attributes">
+      <Item Value="model.DepartmentsEntity.ManagerId"/>
+    </AttrArray>
+  </AssociationEnd>
+</Association>
