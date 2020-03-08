@@ -15,4 +15,10 @@
     <managed-bean-class>beanws.DisplayMBean</managed-bean-class>
     <managed-bean-scope>request</managed-bean-scope>
   </managed-bean>
+  <managed-bean id="__6">
+    <managed-bean-name>csvFileUploadMB</managed-bean-name>
+    <managed-bean-class>view.backing.CsvFileUploadMB</managed-bean-class>
+    <managed-bean-scope>request</managed-bean-scope>
+    <!--oracle-jdev-comment:managed-bean-jsp-link:1CsvFileUpload.jsf-->
+  </managed-bean>
 </adfc-config>
