@@ -81,5 +81,13 @@ public class AppModuleImpl extends ApplicationModuleImpl {
     public ViewLinkImpl getDeptMgrFkLink1() {
         return (ViewLinkImpl) findViewLink("DeptMgrFkLink1");
     }
+
+    /**
+     * Container's getter for DataErrorsView1.
+     * @return DataErrorsView1
+     */
+    public ViewObjectImpl getDataErrorsView1() {
+        return (ViewObjectImpl) findViewObject("DataErrorsView1");
+    }
 }
 

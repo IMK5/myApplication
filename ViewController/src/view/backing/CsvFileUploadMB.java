@@ -84,6 +84,7 @@ public class CsvFileUploadMB {
             //test
             for(String s : getWrongDataList()){
                 System.out.println("wrong data : "+s);
+                saveWrongDataInDB(getWrongDataList());
                 }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -186,23 +187,26 @@ public class CsvFileUploadMB {
         
         return result;
     }
-
+       private ApplicationModule getConfig (){
+        String amDef = "model.AppModule";
+        String config = "AppModuleLocal";
+        ApplicationModule am = Configuration.createRootApplicationModule(amDef, config);
+        return am;
+        }
     /**
      * Save data in DB
      * @param actionEvent
      */
     public void commit(javax.faces.event.ActionEvent actionEvent) {
         System.out.println("Call save method ...");
-        String amDef = "model.AppModule";
-        String config = "AppModuleLocal";
-        ApplicationModule am = Configuration.createRootApplicationModule(amDef, config);
+        ApplicationModule am = getConfig();
         try {
             AppModuleImpl service = (AppModuleImpl) am;
             ViewObject vo = service.getEmployeesView1();
             List<EmployeeDto> dtoList = (List<EmployeeDto>) getTable().getValue();
             for (EmployeeDto dto : dtoList) {
                 System.out.println("dto Email : " + dto.getEmail());
-                createRow(vo, dto);
+                createEmployeeRow(vo, dto);
             }
 
             vo.executeQuery();
@@ -219,8 +223,40 @@ public class CsvFileUploadMB {
         }
 
     }
+    /**
+     * Save wrong data  in Data Base (ERROR_DATA table)
+     * @param wrongDataList
+     */
+    private void saveWrongDataInDB(List<String> wrongDataList){
+        System.out.println("Call   saveWrongDataInDB ...");
+        ApplicationModule am = getConfig();
+        try {
+            AppModuleImpl service = (AppModuleImpl) am;
+            ViewObject vo = service.getDataErrorsView1();
+            for (String wrongData : wrongDataList) {
+                System.out.println("error data  : " + wrongData);
+                Row row = vo.createRow();
+                row.setAttribute("Data", wrongData);
+                vo.insertRow(row);
+            }
 
-    private void createRow(ViewObject vo, EmployeeDto dto) {
+            vo.executeQuery();
+            service.getTransaction().commit();
+
+            setDisplayTable(false);
+            showMessage(FacesMessage.SEVERITY_INFO, "ERROR_DATA INFO", "File saved successfully");
+
+        } catch (Exception e) {
+            showMessage(FacesMessage.SEVERITY_FATAL, "ERROR_DATA ERROR", e.getMessage());
+            System.out.println("ERROR ..." + e.getMessage());
+        } finally {
+            Configuration.releaseRootApplicationModule(am, true);
+        }
+        
+                                            
+    }
+
+    private void createEmployeeRow(ViewObject vo, EmployeeDto dto) {
         Row row = vo.createRow();
         row.setAttribute("EmployeeId", dto.getEmploeeId());
         row.setAttribute("FirstName", dto.getFirstName());

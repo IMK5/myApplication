@@ -26,6 +26,9 @@
   <ViewUsage
     Name="DepartmentsView2"
     ViewObjectName="view.DepartmentsView"/>
+  <ViewUsage
+    Name="DataErrorsView1"
+    ViewObjectName="model.DataErrorsView"/>
   <ViewLinkUsage
     Name="EmpManagerFkLink1"
     ViewLinkObjectName="view.EmpManagerFkLink"
