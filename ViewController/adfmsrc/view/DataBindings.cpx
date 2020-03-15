@@ -3,9 +3,13 @@
              SeparateXMLFiles="false" Package="view" ClientType="Generic">
   <pageMap>
     <page path="/display.jsf" usageId="view_displayPageDef"/>
+    <page path="/untitled1.jsf" usageId="view_untitled1PageDef"/>
+    <page path="/UploadFile.jsf" usageId="view_UploadFilePageDef"/>
   </pageMap>
   <pageDefinitionUsages>
     <page id="view_displayPageDef" path="view.pageDefs.displayPageDef"/>
+    <page id="view_untitled1PageDef" path="view.pageDefs.untitled1PageDef"/>
+    <page id="view_UploadFilePageDef" path="view.pageDefs.UploadFilePageDef"/>
   </pageDefinitionUsages>
   <dataControlUsages>
     <BC4JDataControl id="AppModuleDataControl" Package="model"

@@ -1,23 +1,100 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE html>
-<f:view xmlns:f="http://java.sun.com/jsf/core" xmlns:af="http://xmlns.oracle.com/adf/faces/rich">
-    <af:document title="untitled1.jsf" id="d1">
+<f:view xmlns:f="http://java.sun.com/jsf/core" xmlns:af="http://xmlns.oracle.com/adf/faces/rich"
+        xmlns:h="http://java.sun.com/jsf/html">
+    <af:document title="uploadFile.jsf" id="d1">
+        <af:messages id="m1"/>
         <af:form id="f1" usesUpload="true">
             <af:pageTemplate viewId="/oracle/templates/threeColumnTemplate.jspx" id="pt1">
-                <f:facet name="center"/>
+                <f:facet name="center">
+                    <af:panelHeader  id="panelHeader"
+                                    text="Upload and Process CSV File"
+                                    inlineStyle="text-align:center;">
+                        <af:panelBox id="input">
+                            <af:spacer width="10" height="25"/>
+                            <af:inputFile id="richUploadFile" binding="#{csvFileUploadMB.richUploadFile}" label="file"
+                                          valueChangeListener="#{csvFileUploadMB.uploadFileListener}"
+                                          autoSubmit="true"/>
+                        </af:panelBox>
+                        <af:panelBox id="pinfo" partialTriggers="richUploadFile"
+                                     visible="#{csvFileUploadMB.displayTable}">
+                            <af:spacer width="10" height="25"/>
+                            
+                            <af:inputText label="File Name" value="#{csvFileUploadMB.fileInfoDto.fileName}"
+                                          readOnly="true"/>
+                            <af:inputText label="File Type" value="#{csvFileUploadMB.fileInfoDto.fileType}"
+                                          readOnly="true"/>
+                            <af:inputText label="File Size" value="#{csvFileUploadMB.fileInfoDto.fileSize} Bytes"
+                                          readOnly="true"/>
+                            
+                        </af:panelBox>
+                        <af:spacer width="10" height="25"/>
+                        <af:table var="row" rowBandingInterval="0" id="table" value="#{csvFileUploadMB.employeesList}"
+                                  visible="#{csvFileUploadMB.displayTable}" binding="#{csvFileUploadMB.table}"
+                                  rowSelection="single" filterVisible="true" scrollPolicy="page" fetchSize="10"
+                                  varStatus="vs" shortDesc="display data from csv file">
+                            <af:column id="inx" sortable="false"  width="25">
+                                <af:outputText value="#{vs.index+1}" id="otInex"/>
+                            </af:column>
+                            <af:column width="50" sortable="true" filterable="true" headerText="EmploeeId" id="c1" 
+                                       sortProperty="emploeeId">
+                                <af:inputText value="#{row.emploeeId}" id="ot1" autoSubmit="true"/>
+                            </af:column>
+                            <af:column sortable="true" filterable="true" headerText="FirstName" id="idFt"
+                                       sortProperty="firstName">
+                                <af:inputText value="#{row.firstName}" id="firstNameInput" autoSubmit="true"/>
+                            </af:column>
+                            <af:column sortable="true" headerText="LastName" id="idLs" sortProperty="lastName">
+                                <af:inputText value="#{row.lastName}" id="lastNameInput" autoSubmit="true"/>
+                            </af:column>
+                            <af:column sortable="true" filterable="true" headerText="Email" id="c4"
+                                       sortProperty="email">
+                                <af:inputText value="#{row.email}" id="ot4" autoSubmit="true"/>
+                            </af:column>
+                            <af:column sortable="true" filterable="true" headerText="PhoneNumber" id="c5"
+                                       sortProperty="telephoneNumber">
+                                <af:inputText value="#{row.phoneNumber}" id="ot5" autoSubmit="true"/>
+                            </af:column>
+                            <af:column sortable="true" filterable="true" headerText="HireDate" id="c6"
+                                       sortProperty="hireDate">
+                                <af:inputText value="#{row.hireDate}" id="ot6" autoSubmit="true"/>
+                            </af:column>
+                            <af:column sortable="true" filterable="true" headerText="JobId" id="c7"
+                                       sortProperty="jobId">
+                                <af:inputText value="#{row.jobId}" id="ot7" autoSubmit="true"/>
+                            </af:column>
+                            <af:column sortable="true" filterable="true" headerText="Salary" id="c8"
+                                       sortProperty="salary">
+                                <af:inputText value="#{row.salary}" id="ot8" autoSubmit="true"/>
+                            </af:column>
+                            <af:column sortable="true" filterable="true" headerText="CommissionPct" id="c9"
+                                       sortProperty="commissionPct">
+                                <af:inputText value="#{row.commissionPct}" id="ot9" autoSubmit="true"/>
+                            </af:column>
+                            <af:column sortable="true" filterable="true" headerText="ManagerId" id="c10"
+                                       sortProperty="managerId">
+                                <af:inputText value="#{row.managerId}" id="ot10" autoSubmit="true"/>
+                            </af:column>
+                            <af:column sortable="true" filterable="true" headerText="DepartmentId" id="c11"
+                                       sortProperty="departmentId">
+                                <af:inputText value="#{row.departmentId}" id="ot11" autoSubmit="true"/>
+                            </af:column>
+                        </af:table>
+                    </af:panelHeader>
+                    <af:panelBox id="psave" partialTriggers="richUploadFile" visible="#{csvFileUploadMB.displayTable}">
+                        <af:spacer width="10" height="40"/>
+                        <af:button text="Save" id="bSave" actionListener="#{viewScope.csvFileUploadMB.commit}"
+                                   autoSubmit="true" immediate="true"/>
+                    </af:panelBox>
+                </f:facet>
                 <f:facet name="header"/>
                 <f:facet name="end"/>
-                <f:facet name="start">
-                   <af:inputFile id="richUploadFile" 
-                                  binding="#{csvFileUploadMB.richUploadFile}" 
-                                  label="file"
-                                  valueChangeListener="#{csvFileUploadMB.uploadFileListener}"
-                                  autoSubmit="true"/>
-                </f:facet>
+                <f:facet name="start"></f:facet>
                 <f:facet name="branding"/>
                 <f:facet name="copyright"/>
                 <f:facet name="status"/>
             </af:pageTemplate>
         </af:form>
     </af:document>
+    <!--oracle-jdev-comment:preferred-managed-bean-name:csvFileUploadMB-->
 </f:view>

@@ -1,6 +1,7 @@
 package view.backing;
 
 import beanws.EmployeeDto;
+import beanws.FileInfoDto;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -19,115 +20,84 @@ import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ValueChangeEvent;
 
-import oracle.adf.view.rich.component.rich.RichDocument;
-import oracle.adf.view.rich.component.rich.RichForm;
-import oracle.adf.view.rich.component.rich.fragment.RichPageTemplate;
+import model.AppModuleImpl;
+
+import oracle.adf.view.rich.component.rich.data.RichTable;
 import oracle.adf.view.rich.component.rich.input.RichInputFile;
-import oracle.adf.view.rich.component.rich.layout.RichPanelFormLayout;
-import oracle.adf.view.rich.component.rich.output.RichMessages;
+import oracle.adf.view.rich.component.rich.nav.RichButton;
+import oracle.adf.view.rich.context.AdfFacesContext;
+
+import oracle.jbo.ApplicationModule;
+import oracle.jbo.Row;
+import oracle.jbo.ViewObject;
+import oracle.jbo.client.Configuration;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.myfaces.trinidad.model.UploadedFile;
 
 public class CsvFileUploadMB {
-    private RichPageTemplate pt1;
-    private RichForm f1;
-    private RichDocument d1;
-    private RichMessages richMessages;
-    private RichPanelFormLayout pfl1;
-    private String errorMessage = "";
-    private List<EmployeeDto> employeesList = null;
 
+
+    private String errorMessage = "";
+    private List<EmployeeDto> employeesList = new ArrayList();
+
+    private boolean disableStartUploadButton = true;
+    private boolean displayTable = false;
+    private boolean disableCommitButton = true;
+    private RichTable table;
+    private RichButton bSave;
+    private FileInfoDto fileInfoDto = new FileInfoDto();
     private RichInputFile richUploadFile;
 
     private InputStream uploadFileInputStream;
-
-    //private List bulkEmployeeList;
-
-
-    public void setPt1(RichPageTemplate pt1) {
-        this.pt1 = pt1;
-    }
-
-    public RichPageTemplate getPt1() {
-        return pt1;
-    }
-
-    public void setF1(RichForm f1) {
-        this.f1 = f1;
-    }
-
-    public RichForm getF1() {
-        return f1;
-    }
-
-    public void setD1(RichDocument d1) {
-        this.d1 = d1;
-    }
-
-    public RichDocument getD1() {
-        return d1;
-    }
-
-
-    public void setM1(RichMessages m1) {
-        this.richMessages = m1;
-    }
-
-    public RichMessages getM1() {
-        return richMessages;
-    }
+    private List<String> wrongDataList = new ArrayList();
+    private final static int NUMBER_OF_COLUMN = 11;
 
 
     public void uploadFileListener(ValueChangeEvent valueChangeEvent) throws Exception {
         BufferedReader br = null;
-        String line = "";
-        String cvsSplitBy = ",";
-        int iteration = 0;
-        List<EmployeeDto> employeesList = new ArrayList();
+        setEmployeesList(new ArrayList());
+        setWrongDataList(new ArrayList());
+
+
         // 1 : check file format
         UploadedFile uploadedFile = (UploadedFile) valueChangeEvent.getNewValue();
         if (!uploadedFile.getFilename().endsWith("csv")) {
             showMessage(uploadedFile, FacesMessage.SEVERITY_ERROR, "Check File Format",
                         uploadedFile.getFilename() + " is not CSV file !");
-            throw new Exception (uploadedFile.getFilename() + " is not CSV file !");
+            setDisplayTable(false);
+            setEmployeesList(null);
+            throw new Exception(uploadedFile.getFilename() + " is not CSV file !");
         }
 
         try {
-            // Upload file
-            uploadFileInputStream = uploadedFile.getInputStream();
-            // Validate structure file
-            br = new BufferedReader(new InputStreamReader(uploadFileInputStream));
 
-            while ((line = br.readLine()) != null) {
-                String[] empl = line.split(cvsSplitBy);
-                if (iteration == 0 && checkCsvFileStructure(uploadedFile, empl)) {
-                    iteration++;
-                    continue;
-                }
-                if(empl[0]!= null && !StringUtils.isBlank(empl[0]) ){
-                        System.out.println("Employee: " + empl[0] + " , " + empl[1] + " , " + empl[2] + " , " + empl[3]);
-                        EmployeeDto newEmployee = createNewEmployee(empl);
-                        employeesList.add(newEmployee);
-
-                        System.out.println("Employee [ID= " + newEmployee.getEmploeeId() + " , name=" +
-                                           newEmployee.getFirstName() + "]");
-
-                    }
-               
-            }
+            fileInfoDto = buildFileInfo(uploadedFile);
+            List<EmployeeDto> dtoList = buildData(br, uploadedFile);
+            setEmployeesList(dtoList);
             // Display success message
-            showMessage(uploadedFile, FacesMessage.SEVERITY_INFO, "SUCCESS", "File uploaded with success, you file has :"+employeesList.size() +" records");
-
+            // showMessage(uploadedFile, FacesMessage.SEVERITY_INFO, "SUCCESS", "File uploaded with success, you file has :"+employeesList.size() +" records");
+            setDisplayTable(true);
+            setDisableCommitButton(false);
+            //setDisableStartUploadButton(false);
+            
+            //test
+            for(String s : getWrongDataList()){
+                System.out.println("wrong data : "+s);
+                }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            showMessage(FacesMessage.SEVERITY_ERROR, "ERROR", e.getMessage());
         } catch (IOException e) {
+            showMessage(FacesMessage.SEVERITY_ERROR, "ERROR", e.getMessage());
             e.printStackTrace();
         } finally {
             if (br != null) {
                 try {
+
                     br.close();
                 } catch (IOException e) {
+                    showMessage(FacesMessage.SEVERITY_ERROR, "ERROR", e.getMessage());
                     e.printStackTrace();
                 }
             }
@@ -136,16 +106,148 @@ public class CsvFileUploadMB {
 
     }
 
+    private FileInfoDto buildFileInfo(UploadedFile uploadedFile) {
+        FileInfoDto fileInfoDto = new FileInfoDto();
+        fileInfoDto.setFileName(uploadedFile.getFilename());
+        fileInfoDto.setFileType("CSV");
+        fileInfoDto.setFileSize(String.valueOf(uploadedFile.getLength()));
+        return fileInfoDto;
+    }
+
     /**
-     * Check the head of csv file
+     * Build data from CSV file
+     * @param br
+     * @param uploadedFile
+     * @return
+     * @throws IOException
+     * @throws Exception
+     * @throws ParseException
+     */
+    private List<EmployeeDto> buildData(BufferedReader br, UploadedFile uploadedFile) throws IOException, Exception,
+                                                                                             ParseException {
+        List<EmployeeDto> tempList = new ArrayList();
+        String line = "";
+        String cvsSplitBy = ",";
+        int iteration = 0;
+
+        // Upload file
+        uploadFileInputStream = uploadedFile.getInputStream();
+        // Validate structure file
+        br = new BufferedReader(new InputStreamReader(uploadFileInputStream));
+        while ((line = br.readLine()) != null) {
+            String[] empl = line.split(cvsSplitBy);
+            int fieldsNumber = empl.length;
+            if (iteration == 0 && checkCsvFileHeaderStructure(uploadedFile, empl)) {
+                iteration++;
+                continue;
+            } //empl!= null && empl.length!=0 && empl[0] != null && !StringUtils.isBlank(empl[0])
+            // Array should be not empty
+            if(empl!= null && empl.length!=0){
+                    if (empl.length == NUMBER_OF_COLUMN) {
+                        EmployeeDto newEmployee = createNewEmployee(empl);
+                        tempList.add(newEmployee);
+                        System.out.println("Employee [ID= " + newEmployee.getEmploeeId() + " , name=" +
+                                           newEmployee.getFirstName() + "]");
+
+                    } else {
+                        // Add wrong data into errorDataList
+                        String wrongString = convertArrayToString(empl);
+                        if(wrongString!=null && wrongString.length()!=0){
+                                wrongDataList.add(wrongString);
+                            }
+                       
+                    }
+                }
+           
+
+        }
+        return tempList;
+    }
+/**
+     * Convert Array to String 
+     * @param array represents one line from CSV file
+     * @return
+     */
+    private String convertArrayToString(String[] array) {
+        String result = "";
+        if (array != null && array.length > 0) {
+            StringBuilder sb = new StringBuilder();
+            for (String s : array) {
+                // To avoid empty String
+                if(!StringUtils.isBlank(s)){
+                        sb.append(s).append(",");
+                    }
+                
+            }
+            if(!StringUtils.isBlank(sb)){
+                    result = sb.deleteCharAt(sb.length() - 1).toString();
+                }
+        }
+        
+        return result;
+    }
+
+    /**
+     * Save data in DB
+     * @param actionEvent
+     */
+    public void commit(javax.faces.event.ActionEvent actionEvent) {
+        System.out.println("Call save method ...");
+        String amDef = "model.AppModule";
+        String config = "AppModuleLocal";
+        ApplicationModule am = Configuration.createRootApplicationModule(amDef, config);
+        try {
+            AppModuleImpl service = (AppModuleImpl) am;
+            ViewObject vo = service.getEmployeesView1();
+            List<EmployeeDto> dtoList = (List<EmployeeDto>) getTable().getValue();
+            for (EmployeeDto dto : dtoList) {
+                System.out.println("dto Email : " + dto.getEmail());
+                createRow(vo, dto);
+            }
+
+            vo.executeQuery();
+            service.getTransaction().commit();
+
+            setDisplayTable(false);
+            showMessage(FacesMessage.SEVERITY_INFO, "INFO", "File saved successfully");
+
+        } catch (Exception e) {
+            showMessage(FacesMessage.SEVERITY_FATAL, "ERROR", e.getMessage());
+            System.out.println("ERROR ..." + e.getMessage());
+        } finally {
+            Configuration.releaseRootApplicationModule(am, true);
+        }
+
+    }
+
+    private void createRow(ViewObject vo, EmployeeDto dto) {
+        Row row = vo.createRow();
+        row.setAttribute("EmployeeId", dto.getEmploeeId());
+        row.setAttribute("FirstName", dto.getFirstName());
+        row.setAttribute("LastName", dto.getLastName());
+        row.setAttribute("Email", dto.getEmail());
+        row.setAttribute("PhoneNumber", dto.getPhoneNumber());
+        row.setAttribute("HireDate", dto.getHireDate());
+        row.setAttribute("JobId", dto.getJobId());
+        row.setAttribute("Salary", dto.getSalary());
+        row.setAttribute("CommissionPct", dto.getCommissionPct());
+        row.setAttribute("ManagerId", dto.getManagerId());
+        row.setAttribute("DepartmentId", dto.getDepartmentId());
+        vo.insertRow(row);
+
+    }
+
+    /**
+     * Check the header of csv file
      * @param employee
      * @return
      * @throws Exception
      */
-    private boolean checkCsvFileStructure(UploadedFile uploadedFile, String[] employee) throws Exception {
+    private boolean checkCsvFileHeaderStructure(UploadedFile uploadedFile, String[] employee) throws Exception {
 
         if (employee == null) {
             errorMessage = "Your file is empty @!";
+            handleTable();
             return false;
         }
 
@@ -155,12 +257,20 @@ public class CsvFileUploadMB {
         else {
             errorMessage = "Please check the file structure !";
             showMessage(uploadedFile, FacesMessage.SEVERITY_ERROR, "File structure", errorMessage);
+            setEmployeesList(null);
+            handleTable();
             throw new Exception(errorMessage);
 
         }
 
     }
 
+    /**
+     * Create new EmployeeDto
+     * @param empl
+     * @return EmployeeDto
+     * @throws ParseException
+     */
     private EmployeeDto createNewEmployee(String[] empl) throws ParseException {
         EmployeeDto employee = new EmployeeDto();
         if (empl[0] != null && !StringUtils.isBlank(empl[0])) {
@@ -170,7 +280,7 @@ public class CsvFileUploadMB {
         employee.setFirstName(empl[1]);
         employee.setLastName(empl[2]);
         employee.setEmail(empl[3]);
-        employee.setTelephoneNumber(empl[4]);
+        employee.setPhoneNumber(empl[4]);
         if (empl[5] != null && !StringUtils.isBlank(empl[5])) {
             Date date = StringToDate(empl[5]);
             employee.setHireDate(date);
@@ -203,14 +313,28 @@ public class CsvFileUploadMB {
         return date;
     }
 
-    public void setPfl1(RichPanelFormLayout pfl1) {
-        this.pfl1 = pfl1;
+
+    private void showMessage(UploadedFile uploadedFile, FacesMessage.Severity severity, String message1,
+                             String message2) {
+        FacesContext.getCurrentInstance()
+            .addMessage(richUploadFile.getClientId(FacesContext.getCurrentInstance()),
+                        new FacesMessage(severity, message1, message2));
+        richUploadFile.resetValue();
+        richUploadFile.setValid(false);
     }
 
-    public RichPanelFormLayout getPfl1() {
-        return pfl1;
+    private void showMessage(FacesMessage.Severity severity, String message1, String message2) {
+        FacesContext.getCurrentInstance()
+            .addMessage(richUploadFile.getClientId(FacesContext.getCurrentInstance()),
+                        new FacesMessage(severity, message1, message2));
+        richUploadFile.resetValue();
+        richUploadFile.setValid(false);
     }
 
+    private void handleTable() {
+        setEmployeesList(new ArrayList());
+        setDisplayTable(false);
+    }
 
     public void setUploadFileInputStream(InputStream uploadFileInputStream) {
         this.uploadFileInputStream = uploadFileInputStream;
@@ -237,6 +361,32 @@ public class CsvFileUploadMB {
         return errorMessage;
     }
 
+    public void setTable(RichTable table) {
+        this.table = table;
+        AdfFacesContext facesContext = AdfFacesContext.getCurrentInstance();
+        facesContext.addPartialTarget(table);
+    }
+
+    public RichTable getTable() {
+        return table;
+    }
+
+    public void setDisableStartUploadButton(boolean disableStartUploadButton) {
+        this.disableStartUploadButton = disableStartUploadButton;
+    }
+
+    public boolean isDisableStartUploadButton() {
+        return disableStartUploadButton;
+    }
+
+    public void setDisplayTable(boolean displayTable) {
+        this.displayTable = displayTable;
+    }
+
+    public boolean isDisplayTable() {
+        return displayTable;
+    }
+
     public void setEmployeesList(List<EmployeeDto> employeesList) {
         this.employeesList = employeesList;
     }
@@ -245,12 +395,36 @@ public class CsvFileUploadMB {
         return employeesList;
     }
 
-    private void showMessage(UploadedFile uploadedFile, FacesMessage.Severity severity, String message1,
-                             String message2) {
-        FacesContext.getCurrentInstance()
-            .addMessage(richUploadFile.getClientId(FacesContext.getCurrentInstance()),
-                        new FacesMessage(severity, message1, message2));
-        richUploadFile.resetValue();
-        richUploadFile.setValid(false);
+    public void setDisableCommitButton(boolean disableCommitButton) {
+        this.disableCommitButton = disableCommitButton;
+    }
+
+    public boolean isDisableCommitButton() {
+        return disableCommitButton;
+    }
+
+    public void setBSave(RichButton bSave) {
+        this.bSave = bSave;
+    }
+
+    public RichButton getBSave() {
+        return bSave;
+    }
+
+
+    public void setFileInfoDto(FileInfoDto fileInfoDto) {
+        this.fileInfoDto = fileInfoDto;
+    }
+
+    public FileInfoDto getFileInfoDto() {
+        return fileInfoDto;
+    }
+
+    public void setWrongDataList(List<String> wrongDataList) {
+        this.wrongDataList = wrongDataList;
+    }
+
+    public List<String> getWrongDataList() {
+        return wrongDataList;
     }
 }

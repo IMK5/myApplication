@@ -72,9 +72,13 @@
    <value n="jbo.JpxName" v="model.Model"/>
    <value n="jbo.NoAttrEnumClasses" v="true"/>
    <value n="JboProject" v="true"/>
+   <hash n="oracle.adfdtinternal.model.ide.settings.ADFMSettings">
+      <value n="hasDataControls" v="true"/>
+   </hash>
    <hash n="oracle.ide.model.TechnologyScopeConfiguration">
       <list n="technologyScope">
          <string v="ADFbc"/>
+         <string v="ADFm"/>
          <string v="Java"/>
          <string v="Maven"/>
          <string v="XML"/>

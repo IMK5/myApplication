@@ -9,7 +9,12 @@
   DBObjectType="table"
   DBObjectName="EMPLOYEES"
   AliasName="EmployeesEntity"
-  BindingStyle="OracleName">
+  BindingStyle="OracleName"
+  RowClass="model.EmployeesEntityImpl">
+  <DesignTime>
+    <Attr Name="_codeGenFlag2" Value="Access"/>
+    <Attr Name="_isCodegen" Value="true"/>
+  </DesignTime>
   <Attribute
     Name="EmployeeId"
     IsNotNull="true"

@@ -6,7 +6,9 @@ import java.util.Date;
 /**
  * Used to when uploading CSV file
  */
-public class EmployeeDto {
+public class EmployeeDto  {
+     
+
     public EmployeeDto() {
         super();
     }
@@ -14,7 +16,7 @@ public class EmployeeDto {
     private String firstName;
     private String lastName;
     private String email;
-    private String telephoneNumber;
+    private String phoneNumber;
     private Date hireDate;
     private String jobId;
     private Long salary;
@@ -55,13 +57,7 @@ public class EmployeeDto {
         return email;
     }
 
-    public void setTelephoneNumber(String telephoneNumber) {
-        this.telephoneNumber = telephoneNumber;
-    }
-
-    public String getTelephoneNumber() {
-        return telephoneNumber;
-    }
+     
 
     public void setHireDate(Date hireDate) {
         this.hireDate = hireDate;
@@ -109,5 +105,13 @@ public class EmployeeDto {
 
     public Integer getDepartmentId() {
         return departmentId;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 }
