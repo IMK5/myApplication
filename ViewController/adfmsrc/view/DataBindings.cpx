@@ -3,13 +3,21 @@
              SeparateXMLFiles="false" Package="view" ClientType="Generic">
   <pageMap>
     <page path="/display.jsf" usageId="view_displayPageDef"/>
-    <page path="/untitled1.jsf" usageId="view_untitled1PageDef"/>
+    <page path="/ManageErrorData.jsf" usageId="view_untitled1PageDef"/>
     <page path="/UploadFile.jsf" usageId="view_UploadFilePageDef"/>
+    <page path="/employee.jsff" usageId="view_employeePageDef"/>
+    <page path="/HoldErrors.jsf" usageId="view_HoldErrorsPageDef"/>
+    <page path="/test.jsf" usageId="view_testPageDef"/>
+    <page path="/UpdateErrorData.jsf" usageId="view_untitled1PageDef1"/>
   </pageMap>
   <pageDefinitionUsages>
     <page id="view_displayPageDef" path="view.pageDefs.displayPageDef"/>
     <page id="view_untitled1PageDef" path="view.pageDefs.untitled1PageDef"/>
     <page id="view_UploadFilePageDef" path="view.pageDefs.UploadFilePageDef"/>
+    <page id="view_employeePageDef" path="view.pageDefs.employeePageDef"/>
+    <page id="view_HoldErrorsPageDef" path="view.pageDefs.HoldErrorsPageDef"/>
+    <page id="view_testPageDef" path="view.pageDefs.testPageDef"/>
+    <page id="view_untitled1PageDef1" path="view.pageDefs.untitled1PageDef1"/>
   </pageDefinitionUsages>
   <dataControlUsages>
     <BC4JDataControl id="AppModuleDataControl" Package="model"

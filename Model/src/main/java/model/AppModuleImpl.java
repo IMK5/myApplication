@@ -86,8 +86,8 @@ public class AppModuleImpl extends ApplicationModuleImpl {
      * Container's getter for DataErrorsView1.
      * @return DataErrorsView1
      */
-    public ViewObjectImpl getDataErrorsView1() {
-        return (ViewObjectImpl) findViewObject("DataErrorsView1");
+    public DataErrorsViewImpl getDataErrorsView1() {
+        return (DataErrorsViewImpl) findViewObject("DataErrorsView1");
     }
 }
 

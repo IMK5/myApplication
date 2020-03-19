@@ -7,6 +7,9 @@
     <iterator Binds="EmployeesView1" RangeSize="25" DataControl="AppModuleDataControl" id="EmployeesView1Iterator"/>
     <searchRegion Binds="EmployeesView1Iterator" Criteria=""
                   Customizer="oracle.jbo.uicli.binding.JUSearchBindingCustomizer" id="EmployeesView1Query"/>
+    <iterator Binds="DataErrorsView1" RangeSize="25" DataControl="AppModuleDataControl" id="DataErrorsView1Iterator"/>
+    <searchRegion Binds="DataErrorsView1Iterator" Criteria=""
+                  Customizer="oracle.jbo.uicli.binding.JUSearchBindingCustomizer" id="DataErrorsView1Query"/>
   </executables>
   <bindings>
     <tree IterBinding="EmployeesView1Iterator" id="EmployeesView1">
@@ -44,5 +47,71 @@
       </nodeDefinition>
     </tree>
     <action id="Commit" RequiresUpdateModel="true" Action="commitTransaction" DataControl="AppModuleDataControl"/>
+    <attributeValues IterBinding="EmployeesView1Iterator" id="EmployeeId">
+      <AttrNames>
+        <Item Value="EmployeeId"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="EmployeesView1Iterator" id="FirstName">
+      <AttrNames>
+        <Item Value="FirstName"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="EmployeesView1Iterator" id="LastName">
+      <AttrNames>
+        <Item Value="LastName"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="EmployeesView1Iterator" id="Email">
+      <AttrNames>
+        <Item Value="Email"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="EmployeesView1Iterator" id="PhoneNumber">
+      <AttrNames>
+        <Item Value="PhoneNumber"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="EmployeesView1Iterator" id="HireDate">
+      <AttrNames>
+        <Item Value="HireDate"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="EmployeesView1Iterator" id="JobId">
+      <AttrNames>
+        <Item Value="JobId"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="EmployeesView1Iterator" id="Salary">
+      <AttrNames>
+        <Item Value="Salary"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="EmployeesView1Iterator" id="CommissionPct">
+      <AttrNames>
+        <Item Value="CommissionPct"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="EmployeesView1Iterator" id="ManagerId">
+      <AttrNames>
+        <Item Value="ManagerId"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="EmployeesView1Iterator" id="DepartmentId">
+      <AttrNames>
+        <Item Value="DepartmentId"/>
+      </AttrNames>
+    </attributeValues>
+    <action IterBinding="EmployeesView1Iterator" id="Create" RequiresUpdateModel="true" Action="createRow"/>
+    <tree IterBinding="DataErrorsView1Iterator" id="DataErrorsView1">
+      <nodeDefinition DefName="model.DataErrorsView" Name="DataErrorsView10">
+        <AttrNames>
+          <Item Value="Id"/>
+          <Item Value="Data"/>
+        </AttrNames>
+      </nodeDefinition>
+    </tree>
+    <action IterBinding="EmployeesView1Iterator" id="CreateInsert" InstanceName="AppModuleDataControl.EmployeesView1"
+            DataControl="AppModuleDataControl" RequiresUpdateModel="true" Action="createInsertRow"/>
   </bindings>
 </pageDefinition>

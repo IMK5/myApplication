@@ -1,12 +1,14 @@
 package beanws;
 
+import java.io.Serializable;
+
 import java.util.Date;
 
 
 /**
  * Used to when uploading CSV file
  */
-public class EmployeeDto  {
+public class EmployeeDto  implements Serializable{
      
 
     public EmployeeDto() {

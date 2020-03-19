@@ -93,7 +93,24 @@
    </hash>
    <hash n="oracle.jdeveloper.maven.compiler.MavenConfiguration">
       <hash n="oracle.jdeveloper.maven.compiler.MavenConfiguration">
-         <url n="pomfileURL" path="pom.xml"/>
+         <url n="pomfileURL" path="../dev/testProject/pom.xml"/>
+      </hash>
+   </hash>
+   <hash n="oracle.jdeveloper.model.PathsConfiguration">
+      <hash n="ApplicationBuildToolContentSet">
+         <list n="constituent-sets">
+            <hash>
+               <list n="url-path">
+                  <url path="../dev/testProject/"/>
+               </list>
+            </hash>
+         </list>
+         <list n="pattern-filters">
+            <string v="+*"/>
+         </list>
+         <list n="url-path">
+            <url path="."/>
+         </list>
       </hash>
    </hash>
 </jws:workspace>

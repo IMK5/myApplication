@@ -16,8 +16,9 @@
                                           valueChangeListener="#{csvFileUploadMB.uploadFileListener}"
                                           autoSubmit="true"/>
                         </af:panelBox>
-                        <af:panelBox id="pinfo" partialTriggers="richUploadFile"
-                                     visible="#{csvFileUploadMB.displayTable}">
+                        <af:panelBox id="pinfo" partialTriggers="richUploadFile bSave"
+                                     visible="#{csvFileUploadMB.displayTable}"
+                                      >
                             <af:spacer width="10" height="25"/>
                             
                             <af:inputText label="File Name" value="#{csvFileUploadMB.fileInfoDto.fileName}"
@@ -37,15 +38,15 @@
                                 <af:outputText value="#{vs.index+1}" id="otInex"/>
                             </af:column>
                             <af:column width="50" sortable="true" filterable="true" headerText="EmploeeId" id="c1" 
-                                       sortProperty="emploeeId">
-                                <af:inputText value="#{row.emploeeId}" id="ot1" autoSubmit="true"/>
+                                       sortProperty="emploeeId" required="true">
+                                <af:inputText value="#{row.emploeeId}" id="ot1" autoSubmit="true" />
                             </af:column>
                             <af:column sortable="true" filterable="true" headerText="FirstName" id="idFt"
                                        sortProperty="firstName">
-                                <af:inputText value="#{row.firstName}" id="firstNameInput" autoSubmit="true"/>
+                                <af:inputText value="#{row.firstName}" id="firstNameInput" autoSubmit="true" required="true"/>
                             </af:column>
                             <af:column sortable="true" headerText="LastName" id="idLs" sortProperty="lastName">
-                                <af:inputText value="#{row.lastName}" id="lastNameInput" autoSubmit="true"/>
+                                <af:inputText value="#{row.lastName}" id="lastNameInput" autoSubmit="true" required="true"/>
                             </af:column>
                             <af:column sortable="true" filterable="true" headerText="Email" id="c4"
                                        sortProperty="email">
@@ -81,7 +82,7 @@
                             </af:column>
                         </af:table>
                     </af:panelHeader>
-                    <af:panelBox id="psave" partialTriggers="richUploadFile" visible="#{csvFileUploadMB.displayTable}">
+                    <af:panelBox id="psave" partialTriggers="richUploadFile bSave" visible="#{csvFileUploadMB.displayTable}">
                         <af:spacer width="10" height="40"/>
                         <af:button text="Save" id="bSave" actionListener="#{viewScope.csvFileUploadMB.commit}"
                                    autoSubmit="true" immediate="true"/>

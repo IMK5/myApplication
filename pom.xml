@@ -76,6 +76,7 @@
     <module>ViewController</module>
   </modules>
   <dependencies>
+
     <dependency>
       <groupId>MyApplication</groupId>
       <artifactId>Model</artifactId>
