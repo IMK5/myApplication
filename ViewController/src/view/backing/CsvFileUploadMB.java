@@ -91,16 +91,14 @@ public class CsvFileUploadMB {
             List<EmployeeDto> dtoList = buildData(br, uploadedFile);
             setEmployeesList(dtoList);
             // Display success message
-            // showMessage(uploadedFile, FacesMessage.SEVERITY_INFO, "SUCCESS", "File uploaded with success, you file has :"+employeesList.size() +" records");
             setDisplayTable(true);
             setDisableCommitButton(false);
-            //setDisableStartUploadButton(false);
 
             if (!getWrongDataList().isEmpty()) {
                 services.saveWrongDataInDB(getWrongDataList());
             }
 
-            //  setDisplayTable(false);
+            getFileInfoDto().setErrorRecordsNumber(getWrongDataList().size());
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -126,9 +124,9 @@ public class CsvFileUploadMB {
 
     /**
      * Build data from CSV file
-     * @param br
-     * @param uploadedFile
-     * @return
+     * @param br BufferedReader
+     * @param uploadedFile UploadedFile
+     * @return  List<EmployeeDto>
      * @throws IOException
      * @throws Exception
      * @throws ParseException
@@ -194,43 +192,27 @@ public class CsvFileUploadMB {
         }
 
     }
-    
+
     /**
      * saveEmploee
      */
 
-     
+
     public void resetFormInput(ActionEvent actionEvent) {
         System.out.println("CAll resetFormInput    ...");
         ResetUtils.reset(this.firstNameInput);
         ResetUtils.reset(this.lastNameInput);
         ResetUtils.reset(this.emailInput);
         ResetUtils.reset(this.emploeeIdInput);
-       ResetUtils.reset(this. phoneNumberInput);
+        ResetUtils.reset(this.phoneNumberInput);
         ResetUtils.reset(this.hireDateInput);
         ResetUtils.reset(this.jobIdInput);
-       ResetUtils.reset(this. salaryInput);
-       ResetUtils.reset(this. commissionPctInput);
+        ResetUtils.reset(this.salaryInput);
+        ResetUtils.reset(this.commissionPctInput);
         ResetUtils.reset(this.managerIdInput);
         ResetUtils.reset(this.departmentIdInput);
-       // check if hte action has a component attatched
-         /*  UIComponent uiComp = actionEvent.getComponent();
-           
-           if (uiComp == null)
-           {
-               // if not we use the button which we bound to this bean
-             //  uiComp=getButtonResetByBean();
-               System.out.println("reset fields: buttonID = " + uiComp.getId());
-           }
-           else
-           {
-               System.out.println("reset fields: CompID = " + uiComp.getId());
-           }
-           // pass component inside the UIForm, UIXForm, UIXSubform, UIXRegion, UIXPopup, RichCarousel
-           // or RichPanelCollection which holds the components to reset
-           ResetUtils.reset(uiComp);*/
-        // setEmpDto(new EmployeeDto());
-       AdfFacesContext.getCurrentInstance().addPartialTarget(panelForm);
+
+        AdfFacesContext.getCurrentInstance().addPartialTarget(panelForm);
     }
 
 
@@ -252,7 +234,7 @@ public class CsvFileUploadMB {
             employee[2].equalsIgnoreCase("LastName") && employee[3].equalsIgnoreCase("Email"))
             return true;
         else {
-            errorMessage = "Please check the file structure !";
+            errorMessage = "Please check file structure !";
             showMessage(uploadedFile, FacesMessage.SEVERITY_ERROR, "File structure", errorMessage);
             setEmployeesList(null);
             handleTable();
@@ -280,10 +262,50 @@ public class CsvFileUploadMB {
         richUploadFile.setValid(false);
     }
 
+    public void refreshAfterCommit(ReturnEvent returnEvent) {
+        System.out.println("Call refreshAfterCommit ...");
+        FacesContext fc = FacesContext.getCurrentInstance();
+
+        String val = getInputValueById("emplInputId");
+        System.out.println("input Empl Id :  ..." + val);
+
+        String refreshpage = fc.getViewRoot().getViewId();
+        ViewHandler ViewH = fc.getApplication().getViewHandler();
+        UIViewRoot UIV = ViewH.createView(fc, refreshpage);
+        UIV.setViewId(refreshpage);
+        fc.setViewRoot(UIV);
+
+
+    }
+
+    public void refresh() {
+        System.out.println("Call refresh ...");
+        FacesContext fc = FacesContext.getCurrentInstance();
+
+        String val = getInputValueById("emplInputId");
+        System.out.println("input Empl Id :  ..." + val);
+
+        String refreshpage = fc.getViewRoot().getViewId();
+        ViewHandler ViewH = fc.getApplication().getViewHandler();
+        UIViewRoot UIV = ViewH.createView(fc, refreshpage);
+        UIV.setViewId(refreshpage);
+        fc.setViewRoot(UIV);
+    }
+
     private void handleTable() {
         setEmployeesList(new ArrayList());
         setDisplayTable(false);
     }
+
+
+    public String getInputValueById(String id) {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        UIViewRoot root = facesContext.getViewRoot();
+        RichInputText inputText = (RichInputText) root.findComponent(id);
+        String val = inputText.getValue().toString();
+        return val;
+    }
+
 
     public void setUploadFileInputStream(InputStream uploadFileInputStream) {
         this.uploadFileInputStream = uploadFileInputStream;
@@ -498,43 +520,4 @@ public class CsvFileUploadMB {
     }
 
 
-    public String getInputValueById(String id){
-            FacesContext facesContext = FacesContext.getCurrentInstance();
-            UIViewRoot root = facesContext.getViewRoot();
-            RichInputText inputText = (RichInputText)root.findComponent(id);
-            String val=inputText.getValue().toString();
-            return val;
-        }
-
-    public void refreshAfterCommit(ReturnEvent returnEvent) {
-       System.out.println("Call refreshAfterCommit ...");
-        FacesContext fc = FacesContext.getCurrentInstance();
-        
-        String val = getInputValueById("emplInputId");
-        System.out.println("input Empl Id :  ..."+ val);
-        
-        String refreshpage = fc.getViewRoot().getViewId(); 
-        ViewHandler ViewH = fc.getApplication().getViewHandler();
-        UIViewRoot UIV = ViewH.createView(fc, refreshpage);
-        UIV.setViewId(refreshpage);
-        fc.setViewRoot(UIV);
-       
-       
-    }
-    
-    public void refresh(){
-            System.out.println("Call refresh ...");
-             FacesContext fc = FacesContext.getCurrentInstance();
-             
-             String val = getInputValueById("emplInputId");
-             System.out.println("input Empl Id :  ..."+ val);
-             
-             String refreshpage = fc.getViewRoot().getViewId(); 
-             ViewHandler ViewH = fc.getApplication().getViewHandler();
-             UIViewRoot UIV = ViewH.createView(fc, refreshpage);
-             UIV.setViewId(refreshpage);
-             fc.setViewRoot(UIV);
-        }
-    
-    
 }

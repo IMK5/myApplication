@@ -16,4 +16,14 @@
     <managed-bean-class>view.backing.ManageErrorDataMBean</managed-bean-class>
     <managed-bean-scope>request</managed-bean-scope>
   </managed-bean>
+  <managed-bean id="__r">
+    <managed-bean-name>MyProgressRangeModel</managed-bean-name>
+    <managed-bean-class>view.backing.progress.MyProgressRangeModel</managed-bean-class>
+    <managed-bean-scope>request</managed-bean-scope>
+  </managed-bean>
+  <managed-bean id="__r12">
+    <managed-bean-name>MyFileUploadBean</managed-bean-name>
+    <managed-bean-class>view.backing.progress.MyFileUploadBean</managed-bean-class>
+    <managed-bean-scope>request</managed-bean-scope>
+  </managed-bean>
 </adfc-config>

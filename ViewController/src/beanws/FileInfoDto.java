@@ -5,6 +5,7 @@ public class FileInfoDto {
     private String fileName;
     private String fileType;
     private String fileSize;
+    private Integer errorRecordsNumber;
 
 
     public FileInfoDto(String fileName, String fileType, String fileSize) {
@@ -39,5 +40,13 @@ public class FileInfoDto {
 
     public FileInfoDto() {
         super();
+    }
+
+    public void setErrorRecordsNumber(Integer errorRecordsNumber) {
+        this.errorRecordsNumber = errorRecordsNumber;
+    }
+
+    public Integer getErrorRecordsNumber() {
+        return errorRecordsNumber;
     }
 }
