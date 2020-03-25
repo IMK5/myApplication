@@ -3,4 +3,11 @@
   <application>
     <default-render-kit-id>oracle.adf.rich</default-render-kit-id>
   </application>
+  <navigation-rule>
+    <from-view-id>/uploadFile.jsf</from-view-id>
+    <navigation-case>
+      <from-outcome>updateDataStructure</from-outcome>
+      <to-view-id>/updateErrorDataStructure.jsf</to-view-id>
+    </navigation-case>
+  </navigation-rule>
 </faces-config>

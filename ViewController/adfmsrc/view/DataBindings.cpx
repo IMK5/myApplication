@@ -4,11 +4,11 @@
   <pageMap>
     <page path="/display.jsf" usageId="view_displayPageDef"/>
     <page path="/ManageErrorData.jsf" usageId="view_untitled1PageDef"/>
-    <page path="/UploadFile.jsf" usageId="view_UploadFilePageDef"/>
+    <page path="/uploadFile.jsf" usageId="view_UploadFilePageDef"/>
     <page path="/employee.jsff" usageId="view_employeePageDef"/>
     <page path="/HoldErrors.jsf" usageId="view_HoldErrorsPageDef"/>
     <page path="/test.jsf" usageId="view_testPageDef"/>
-    <page path="/UpdateErrorData.jsf" usageId="view_untitled1PageDef1"/>
+    <page path="/updateErrorDataStructure.jsf" usageId="view_untitled1PageDef1"/>
   </pageMap>
   <pageDefinitionUsages>
     <page id="view_displayPageDef" path="view.pageDefs.displayPageDef"/>

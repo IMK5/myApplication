@@ -6,6 +6,7 @@ public class FileInfoDto {
     private String fileType;
     private String fileSize;
     private Integer errorRecordsNumber;
+    private Integer rightDataNumber;
 
 
     public FileInfoDto(String fileName, String fileType, String fileSize) {
@@ -48,5 +49,13 @@ public class FileInfoDto {
 
     public Integer getErrorRecordsNumber() {
         return errorRecordsNumber;
+    }
+
+    public void setRightDataNumber(Integer rightDataNumber) {
+        this.rightDataNumber = rightDataNumber;
+    }
+
+    public Integer getRightDataNumber() {
+        return rightDataNumber;
     }
 }

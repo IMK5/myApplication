@@ -18,17 +18,20 @@ import javax.faces.application.FacesMessage;
 import javax.faces.application.ViewHandler;
 import javax.faces.component.UIViewRoot;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
 import javax.faces.event.ValueChangeEvent;
 
+import oracle.adf.model.BindingContext;
+import oracle.adf.model.binding.DCIteratorBinding;
 import oracle.adf.view.rich.component.rich.data.RichTable;
-import oracle.adf.view.rich.component.rich.input.RichInputDate;
 import oracle.adf.view.rich.component.rich.input.RichInputFile;
 import oracle.adf.view.rich.component.rich.input.RichInputText;
+import oracle.adf.view.rich.component.rich.layout.RichPanelBox;
 import oracle.adf.view.rich.component.rich.layout.RichPanelFormLayout;
 import oracle.adf.view.rich.component.rich.nav.RichButton;
 import oracle.adf.view.rich.context.AdfFacesContext;
-import oracle.adf.view.rich.util.ResetUtils;
+
+import oracle.binding.BindingContainer;
+import oracle.binding.OperationBinding;
 
 import org.apache.myfaces.trinidad.event.ReturnEvent;
 import org.apache.myfaces.trinidad.model.UploadedFile;
@@ -42,23 +45,15 @@ public class CsvFileUploadMB {
     private boolean disableStartUploadButton = true;
     private boolean displayTable = false;
     private boolean disableCommitButton = true;
+    private boolean displayStructureDataLink = false;
     private RichTable table;
     private RichButton bSave;
     private FileInfoDto fileInfoDto = new FileInfoDto();
     private RichTable errorDataTable;
     private RichPanelFormLayout panelForm;
+    private RichPanelBox pSave;
     private RichInputFile richUploadFile;
     private RichInputText emploeeIdInput;
-    private RichInputText firstNameInput;
-    private RichInputText lastNameInput;
-    private RichInputText emailInput;
-    private RichInputText phoneNumberInput;
-    private RichInputDate hireDateInput;
-    private RichInputText jobIdInput;
-    private RichInputText salaryInput;
-    private RichInputText commissionPctInput;
-    private RichInputText managerIdInput;
-    private RichInputText departmentIdInput;
 
 
     private InputStream uploadFileInputStream;
@@ -67,8 +62,14 @@ public class CsvFileUploadMB {
     private EmployeeDto empDto = new EmployeeDto();
 
     private Services services = new Services();
+    private RichPanelBox panelTable;
 
 
+    /**
+     * Called when click on upload inputFile
+     * @param valueChangeEvent
+     * @throws Exception
+     */
     public void uploadFileListener(ValueChangeEvent valueChangeEvent) throws Exception {
         BufferedReader br = null;
         setEmployeesList(new ArrayList());
@@ -77,7 +78,7 @@ public class CsvFileUploadMB {
 
         // 1 : check file format
         UploadedFile uploadedFile = (UploadedFile) valueChangeEvent.getNewValue();
-        if (services.isCsvFile(uploadedFile)) {
+        if (!services.isCsvFile(uploadedFile)) {
             showMessage(uploadedFile, FacesMessage.SEVERITY_ERROR, "Check File Format",
                         uploadedFile.getFilename() + " is not CSV file !");
             setDisplayTable(false);
@@ -90,15 +91,25 @@ public class CsvFileUploadMB {
             fileInfoDto = services.buildFileInfo(uploadedFile);
             List<EmployeeDto> dtoList = buildData(br, uploadedFile);
             setEmployeesList(dtoList);
-            // Display success message
+        
             setDisplayTable(true);
             setDisableCommitButton(false);
 
-            if (!getWrongDataList().isEmpty()) {
-                services.saveWrongDataInDB(getWrongDataList());
-            }
-
             getFileInfoDto().setErrorRecordsNumber(getWrongDataList().size());
+            getFileInfoDto().setRightDataNumber(dtoList.size());
+
+            // Save data in DB
+            services.saveEmployees_Draft_AND_Error_Data(getEmployeesList(), getWrongDataList());
+
+
+            //  refresh();
+            refreshEmpDraftTable();
+            if(getWrongDataList().size()>0){
+                    setDisplayStructureDataLink(true);
+                }
+            
+           // AdfFacesContext.getCurrentInstance().addPartialTarget(getPanelTable());
+
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -119,6 +130,22 @@ public class CsvFileUploadMB {
         }
 
 
+    }
+    /**
+     * Save EmployeesDraft list
+     * @return
+     */
+    public String bSave_action() {
+         
+        System.out.println("Calla  bSave_action ...");
+        BindingContainer bindings = getBindings();
+        OperationBinding operationBinding = bindings.getOperationBinding("Commit");
+        Object result = operationBinding.execute();
+        if (!operationBinding.getErrors().isEmpty()) {
+            return null;
+        }
+        setDisplayTable(false);
+        return null;
     }
 
 
@@ -144,12 +171,11 @@ public class CsvFileUploadMB {
         br = new BufferedReader(new InputStreamReader(uploadFileInputStream));
         while ((line = br.readLine()) != null) {
             String[] empl = line.split(cvsSplitBy);
-            int fieldsNumber = empl.length;
             if (iteration == 0 && checkCsvFileHeaderStructure(uploadedFile, empl)) {
                 iteration++;
                 continue;
-            } //empl!= null && empl.length!=0 && empl[0] != null && !StringUtils.isBlank(empl[0])
-            // Array should be not empty
+            }
+            // Check structure file
             if (empl != null && empl.length != 0) {
                 if (empl.length == NUMBER_OF_COLUMN) {
                     EmployeeDto newEmployee = services.createNewEmployee(empl);
@@ -172,49 +198,33 @@ public class CsvFileUploadMB {
         return tempList;
     }
 
+    public void goToUpdatedataStructure(ReturnEvent returnEvent) {
+        System.out.println("Call  goToUpdatedataStructure...");
+    }
 
-    /**
-     * Save data in DB
-     * @param actionEvent
-     */
-    public void commit(javax.faces.event.ActionEvent actionEvent) {
-        System.out.println("Call save method ...");
+    public String saveDraftEmployees() {
+        System.out.println("Call  saveDraftEmployees...");
         try {
-            List<EmployeeDto> dtoList = (List<EmployeeDto>) getTable().getValue();
-            services.saveEmployeesList(dtoList);
-
+            // List<EmployeeDto> dtoList = (List<EmployeeDto>) getTable().getValue();
+            services.saveEmployees_Draft_List(getEmployeesList());
             setDisplayTable(false);
-            showMessage(FacesMessage.SEVERITY_INFO, "INFO", "File saved successfully");
+            if (getFileInfoDto().getErrorRecordsNumber() > 0) {
+                System.out.println("go to updateStructureFile ...");
+                showMessage(FacesMessage.SEVERITY_INFO, "Update data structure !",
+                            "You have ( " + getFileInfoDto().getErrorRecordsNumber() + " rows) to be updated");
+                return "updateDataStructure";
+            } else {
+                showMessage(FacesMessage.SEVERITY_INFO, "INFO", "File saved successfully");
+            }
 
         } catch (Exception e) {
             showMessage(FacesMessage.SEVERITY_FATAL, "ERROR", e.getMessage());
             System.out.println("ERROR ..." + e.getMessage());
+
         }
 
+        return null;
     }
-
-    /**
-     * saveEmploee
-     */
-
-
-    public void resetFormInput(ActionEvent actionEvent) {
-        System.out.println("CAll resetFormInput    ...");
-        ResetUtils.reset(this.firstNameInput);
-        ResetUtils.reset(this.lastNameInput);
-        ResetUtils.reset(this.emailInput);
-        ResetUtils.reset(this.emploeeIdInput);
-        ResetUtils.reset(this.phoneNumberInput);
-        ResetUtils.reset(this.hireDateInput);
-        ResetUtils.reset(this.jobIdInput);
-        ResetUtils.reset(this.salaryInput);
-        ResetUtils.reset(this.commissionPctInput);
-        ResetUtils.reset(this.managerIdInput);
-        ResetUtils.reset(this.departmentIdInput);
-
-        AdfFacesContext.getCurrentInstance().addPartialTarget(panelForm);
-    }
-
 
     /**
      * Check the header of csv file
@@ -229,7 +239,7 @@ public class CsvFileUploadMB {
             handleTable();
             return false;
         }
-
+        // Check all fields...
         if (employee[0].equalsIgnoreCase("EmploeeId") && employee[1].equalsIgnoreCase("FirstName") &&
             employee[2].equalsIgnoreCase("LastName") && employee[3].equalsIgnoreCase("Email"))
             return true;
@@ -423,85 +433,6 @@ public class CsvFileUploadMB {
         return emploeeIdInput;
     }
 
-    public void setFirstNameInput(RichInputText firstNameInput) {
-        this.firstNameInput = firstNameInput;
-    }
-
-    public RichInputText getFirstNameInput() {
-        return firstNameInput;
-    }
-
-    public void setLastNameInput(RichInputText lastNameInput) {
-        this.lastNameInput = lastNameInput;
-    }
-
-    public RichInputText getLastNameInput() {
-        return lastNameInput;
-    }
-
-    public void setEmailInput(RichInputText emailInput) {
-        this.emailInput = emailInput;
-    }
-
-    public RichInputText getEmailInput() {
-        return emailInput;
-    }
-
-    public void setPhoneNumberInput(RichInputText phoneNumberInput) {
-        this.phoneNumberInput = phoneNumberInput;
-    }
-
-    public RichInputText getPhoneNumberInput() {
-        return phoneNumberInput;
-    }
-
-    public void setHireDateInput(RichInputDate hireDateInput) {
-        this.hireDateInput = hireDateInput;
-    }
-
-    public RichInputDate getHireDateInput() {
-        return hireDateInput;
-    }
-
-    public void setJobIdInput(RichInputText jobIdInput) {
-        this.jobIdInput = jobIdInput;
-    }
-
-    public RichInputText getJobIdInput() {
-        return jobIdInput;
-    }
-
-    public void setSalaryInput(RichInputText salaryInput) {
-        this.salaryInput = salaryInput;
-    }
-
-    public RichInputText getSalaryInput() {
-        return salaryInput;
-    }
-
-    public void setCommissionPctInput(RichInputText commissionPctInput) {
-        this.commissionPctInput = commissionPctInput;
-    }
-
-    public RichInputText getCommissionPctInput() {
-        return commissionPctInput;
-    }
-
-    public void setManagerIdInput(RichInputText managerIdInput) {
-        this.managerIdInput = managerIdInput;
-    }
-
-    public RichInputText getManagerIdInput() {
-        return managerIdInput;
-    }
-
-    public void setDepartmentIdInput(RichInputText departmentIdInput) {
-        this.departmentIdInput = departmentIdInput;
-    }
-
-    public RichInputText getDepartmentIdInput() {
-        return departmentIdInput;
-    }
 
     public void setErrorDataTable(RichTable errorDataTable) {
         this.errorDataTable = errorDataTable;
@@ -520,4 +451,32 @@ public class CsvFileUploadMB {
     }
 
 
+    private void refreshEmpDraftTable() {
+        DCIteratorBinding iter = (DCIteratorBinding) BindingContext.getCurrent()
+                                                                   .getCurrentBindingsEntry()
+                                                                   .get("EmployeesDraftView1Iterator"); // from pageDef.
+        iter.getViewObject().executeQuery();
+    }
+
+
+    public void setPanelTable(RichPanelBox panelTable) {
+        this.panelTable = panelTable;
+    }
+
+    public RichPanelBox getPanelTable() {
+        return panelTable;
+    }
+
+    public BindingContainer getBindings() {
+        return BindingContext.getCurrent().getCurrentBindingsEntry();
+    }
+
+
+    public void setDisplayStructureDataLink(boolean displayStructureDataLink) {
+        this.displayStructureDataLink = displayStructureDataLink;
+    }
+
+    public boolean isDisplayStructureDataLink() {
+        return displayStructureDataLink;
+    }
 }

@@ -89,5 +89,22 @@ public class AppModuleImpl extends ApplicationModuleImpl {
     public DataErrorsViewImpl getDataErrorsView1() {
         return (DataErrorsViewImpl) findViewObject("DataErrorsView1");
     }
+
+
+    /**
+     * Container's getter for EmployeesDraftView1.
+     * @return EmployeesDraftView1
+     */
+    public EmployeesDraftViewImpl getEmployeesDraftView1() {
+        return (EmployeesDraftViewImpl) findViewObject("EmployeesDraftView1");
+    }
+
+    /**
+     * Container's getter for EmployeesDraftView1_1.
+     * @return EmployeesDraftView1_1
+     */
+    public EmployeesDraftView1Impl getEmployeesDraftView1_1() {
+        return (EmployeesDraftView1Impl) findViewObject("EmployeesDraftView1_1");
+    }
 }
 

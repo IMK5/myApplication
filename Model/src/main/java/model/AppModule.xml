@@ -29,6 +29,12 @@
   <ViewUsage
     Name="DataErrorsView1"
     ViewObjectName="model.DataErrorsView"/>
+  <ViewUsage
+    Name="EmployeesDraftView1"
+    ViewObjectName="model.EmployeesDraftView"/>
+  <ViewUsage
+    Name="EmployeesDraftView1_1"
+    ViewObjectName="model.EmployeesDraftView1"/>
   <ViewLinkUsage
     Name="EmpManagerFkLink1"
     ViewLinkObjectName="view.EmpManagerFkLink"
