@@ -15,13 +15,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.faces.application.FacesMessage;
-import javax.faces.application.ViewHandler;
 import javax.faces.component.UIViewRoot;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ValueChangeEvent;
 
 import oracle.adf.model.BindingContext;
-import oracle.adf.model.binding.DCIteratorBinding;
 import oracle.adf.view.rich.component.rich.data.RichTable;
 import oracle.adf.view.rich.component.rich.input.RichInputFile;
 import oracle.adf.view.rich.component.rich.input.RichInputText;
@@ -33,7 +31,6 @@ import oracle.adf.view.rich.context.AdfFacesContext;
 import oracle.binding.BindingContainer;
 import oracle.binding.OperationBinding;
 
-import org.apache.myfaces.trinidad.event.ReturnEvent;
 import org.apache.myfaces.trinidad.model.UploadedFile;
 
 public class CsvFileUploadMB {
@@ -51,7 +48,6 @@ public class CsvFileUploadMB {
     private FileInfoDto fileInfoDto = new FileInfoDto();
     private RichTable errorDataTable;
     private RichPanelFormLayout panelForm;
-    private RichPanelBox pSave;
     private RichInputFile richUploadFile;
     private RichInputText emploeeIdInput;
 
@@ -63,10 +59,11 @@ public class CsvFileUploadMB {
 
     private Services services = new Services();
     private RichPanelBox panelTable;
+    
 
 
     /**
-     * Called when click on upload inputFile
+     * Called when click on upload button
      * @param valueChangeEvent
      * @throws Exception
      */
@@ -79,7 +76,7 @@ public class CsvFileUploadMB {
         // 1 : check file format
         UploadedFile uploadedFile = (UploadedFile) valueChangeEvent.getNewValue();
         if (!services.isCsvFile(uploadedFile)) {
-            showMessage(uploadedFile, FacesMessage.SEVERITY_ERROR, "Check File Format",
+            showMessage(FacesMessage.SEVERITY_ERROR, "Check File Format",
                         uploadedFile.getFilename() + " is not CSV file !");
             setDisplayTable(false);
             setEmployeesList(null);
@@ -91,26 +88,22 @@ public class CsvFileUploadMB {
             fileInfoDto = services.buildFileInfo(uploadedFile);
             List<EmployeeDto> dtoList = buildData(br, uploadedFile);
             setEmployeesList(dtoList);
-        
-            setDisplayTable(true);
-            setDisableCommitButton(false);
-
+         
             getFileInfoDto().setErrorRecordsNumber(getWrongDataList().size());
             getFileInfoDto().setRightDataNumber(dtoList.size());
 
             // Save data in DB
             services.saveEmployees_Draft_AND_Error_Data(getEmployeesList(), getWrongDataList());
 
-
-            //  refresh();
-            refreshEmpDraftTable();
+            //  Refresh table;
+            services.refreshEmpDraftTable("EmployeesDraftView1Iterator");
             if(getWrongDataList().size()>0){
                     setDisplayStructureDataLink(true);
                 }
+
+            setDisplayTable(true);
+            AdfFacesContext.getCurrentInstance().addPartialTarget(getPanelForm());
             
-           // AdfFacesContext.getCurrentInstance().addPartialTarget(getPanelTable());
-
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             showMessage(FacesMessage.SEVERITY_ERROR, "ERROR", e.getMessage());
@@ -132,8 +125,8 @@ public class CsvFileUploadMB {
 
     }
     /**
-     * Save EmployeesDraft list
-     * @return
+     * Save EmployeesDraft list in DB
+     * @return String
      */
     public String bSave_action() {
          
@@ -197,11 +190,7 @@ public class CsvFileUploadMB {
         }
         return tempList;
     }
-
-    public void goToUpdatedataStructure(ReturnEvent returnEvent) {
-        System.out.println("Call  goToUpdatedataStructure...");
-    }
-
+ /*
     public String saveDraftEmployees() {
         System.out.println("Call  saveDraftEmployees...");
         try {
@@ -224,7 +213,7 @@ public class CsvFileUploadMB {
         }
 
         return null;
-    }
+    }*/
 
     /**
      * Check the header of csv file
@@ -245,7 +234,7 @@ public class CsvFileUploadMB {
             return true;
         else {
             errorMessage = "Please check file structure !";
-            showMessage(uploadedFile, FacesMessage.SEVERITY_ERROR, "File structure", errorMessage);
+            showMessage(FacesMessage.SEVERITY_ERROR, "File structure", errorMessage);
             setEmployeesList(null);
             handleTable();
             throw new Exception(errorMessage);
@@ -254,7 +243,7 @@ public class CsvFileUploadMB {
 
     }
 
-
+/*
     private void showMessage(UploadedFile uploadedFile, FacesMessage.Severity severity, String message1,
                              String message2) {
         FacesContext.getCurrentInstance()
@@ -263,7 +252,7 @@ public class CsvFileUploadMB {
         richUploadFile.resetValue();
         richUploadFile.setValid(false);
     }
-
+*/
     private void showMessage(FacesMessage.Severity severity, String message1, String message2) {
         FacesContext.getCurrentInstance()
             .addMessage(richUploadFile.getClientId(FacesContext.getCurrentInstance()),
@@ -272,42 +261,17 @@ public class CsvFileUploadMB {
         richUploadFile.setValid(false);
     }
 
-    public void refreshAfterCommit(ReturnEvent returnEvent) {
-        System.out.println("Call refreshAfterCommit ...");
-        FacesContext fc = FacesContext.getCurrentInstance();
-
-        String val = getInputValueById("emplInputId");
-        System.out.println("input Empl Id :  ..." + val);
-
-        String refreshpage = fc.getViewRoot().getViewId();
-        ViewHandler ViewH = fc.getApplication().getViewHandler();
-        UIViewRoot UIV = ViewH.createView(fc, refreshpage);
-        UIV.setViewId(refreshpage);
-        fc.setViewRoot(UIV);
-
-
-    }
-
-    public void refresh() {
-        System.out.println("Call refresh ...");
-        FacesContext fc = FacesContext.getCurrentInstance();
-
-        String val = getInputValueById("emplInputId");
-        System.out.println("input Empl Id :  ..." + val);
-
-        String refreshpage = fc.getViewRoot().getViewId();
-        ViewHandler ViewH = fc.getApplication().getViewHandler();
-        UIViewRoot UIV = ViewH.createView(fc, refreshpage);
-        UIV.setViewId(refreshpage);
-        fc.setViewRoot(UIV);
-    }
-
+     
     private void handleTable() {
         setEmployeesList(new ArrayList());
         setDisplayTable(false);
     }
 
-
+/**
+     * Get inputValue by component Id from UI
+     * @param id
+     * @return
+     */
     public String getInputValueById(String id) {
         FacesContext facesContext = FacesContext.getCurrentInstance();
         UIViewRoot root = facesContext.getViewRoot();
@@ -315,6 +279,8 @@ public class CsvFileUploadMB {
         String val = inputText.getValue().toString();
         return val;
     }
+    
+    
 
 
     public void setUploadFileInputStream(InputStream uploadFileInputStream) {
@@ -450,15 +416,7 @@ public class CsvFileUploadMB {
         return panelForm;
     }
 
-
-    private void refreshEmpDraftTable() {
-        DCIteratorBinding iter = (DCIteratorBinding) BindingContext.getCurrent()
-                                                                   .getCurrentBindingsEntry()
-                                                                   .get("EmployeesDraftView1Iterator"); // from pageDef.
-        iter.getViewObject().executeQuery();
-    }
-
-
+ 
     public void setPanelTable(RichPanelBox panelTable) {
         this.panelTable = panelTable;
     }
@@ -479,4 +437,5 @@ public class CsvFileUploadMB {
     public boolean isDisplayStructureDataLink() {
         return displayStructureDataLink;
     }
+
 }

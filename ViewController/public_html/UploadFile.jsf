@@ -17,34 +17,31 @@
                                       inlineStyle="width:200px;" autoSubmit="true"/>
                     </af:panelBox>
                     <af:spacer width="10" height="25"/>
-                    <af:panelBox id="pinfo" text="File information" background="light"
-                                 contentStyle="background: #eff2f5;" visible="#{csvFileUploadMB.displayTable}"
-                                  partialTriggers="s1:pSave s1:table">
-                        <af:inputText label="File Name :" value="#{csvFileUploadMB.fileInfoDto.fileName}"
-                                      readOnly="true"/>
-                        <af:inputText label="File Type :" value="#{csvFileUploadMB.fileInfoDto.fileType}"
-                                      readOnly="true"/>
-                        <af:inputText label="File Size :" value="#{csvFileUploadMB.fileInfoDto.fileSize} Bytes"
-                                      readOnly="true"/>
-                        <af:inputText label="Right number of lines :"
-                                      value="#{csvFileUploadMB.fileInfoDto.rightDataNumber}" readOnly="true"/>
-                        <af:inputText label="Wrong number of lines :"
-                                    contentStyle="#{csvFileUploadMB.fileInfoDto.errorRecordsNumber > 0 ? 'background: #FF0000;;': ''} "
-                                      value="#{csvFileUploadMB.fileInfoDto.errorRecordsNumber}" readOnly="true"/>
-                        <af:goLink text="Please click here to fix structure data before save them"
-                                   
-                                    inlineStyle="font-size: 20px;background: #FFA07A;"
-                                   destination="updateErrorDataStructure.jsf" id="gl1"
-                                   visible="#{csvFileUploadMB.fileInfoDto.errorRecordsNumber > 0 ? 'true': 'false'}"/>
-                    </af:panelBox>
-                    <af:spacer width="10" height="25"/>
-                    <af:subform id="s1" visible="#{csvFileUploadMB.displayTable}" >
-                     <af:table value="#{bindings.EmployeesDraftView12.collectionModel}" var="row"
+                    <af:panelFormLayout id="s1" visible="#{csvFileUploadMB.displayTable}"
+                                        partialTriggers="richUploadFile bSave" binding="#{csvFileUploadMB.panelForm}">
+                        <af:panelBox id="pinfo" text="File information" background="light"
+                                     contentStyle="background: #eff2f5;" showDisclosure="false">
+                            <af:inputText label="File Name :" value="#{csvFileUploadMB.fileInfoDto.fileName}"
+                                          readOnly="true" autoSubmit="true"/>
+                            <af:inputText label="File Type :" value="#{csvFileUploadMB.fileInfoDto.fileType}"
+                                          readOnly="true" autoSubmit="true"/>
+                            <af:inputText label="File Size :" value="#{csvFileUploadMB.fileInfoDto.fileSize} Bytes"
+                                          readOnly="true" autoSubmit="true"/>
+                            <af:inputText label="Right number of lines :" autoSubmit="true"
+                                          value="#{csvFileUploadMB.fileInfoDto.rightDataNumber}" readOnly="true"/>
+                            <af:inputText label="Wrong number of lines :" autoSubmit="true"
+                                          contentStyle="#{csvFileUploadMB.fileInfoDto.errorRecordsNumber > 0 ? 'background: #FF0000;;': ''} "
+                                          value="#{csvFileUploadMB.fileInfoDto.errorRecordsNumber}" readOnly="true"/>
+                            <af:goLink text="Please click here to fix structure data before save them"
+                                       inlineStyle="font-size: 20px;background: #FFA07A;"
+                                       destination="updateErrorDataStructure.jsf" id="gl1"
+                                       visible="#{csvFileUploadMB.fileInfoDto.errorRecordsNumber > 0 ? 'true': 'false'}"/>
+                        </af:panelBox>
+                        <af:spacer width="10" height="25"/>
+                        <af:table value="#{bindings.EmployeesDraftView12.collectionModel}" var="row"
                                   rows="#{bindings.EmployeesDraftView12.rangeSize}"
                                   emptyText="#{bindings.EmployeesDraftView12.viewable ? 'No data to display.' : 'Access Denied.'}"
                                   scrollPolicy="page" rowBandingInterval="0" fetchSize="20"
-                                  binding="#{csvFileUploadMB.table}"
-                                  visible="#{csvFileUploadMB.displayTable}"
                                   selectedRowKeys="#{bindings.EmployeesDraftView12.collectionModel.selectedRow}"
                                   selectionListener="#{bindings.EmployeesDraftView12.collectionModel.makeCurrent}"
                                   rowSelection="single"
@@ -196,21 +193,11 @@
                                 </af:inputText>
                             </af:column>
                         </af:table>
-                        <af:panelBox id="pSave" partialTriggers="::richUploadFile bSave" visible="#{csvFileUploadMB.displayTable}">
-                            <af:button text="Commit" id="bSave"
-                                       autoSubmit="true" immediate="true"
+                        <af:panelBox id="pSave">
+                            <af:button text="Commit" id="bSave" autoSubmit="true" immediate="true"
                                        action="#{csvFileUploadMB.bSave_action}"/>
                         </af:panelBox>
-                    
-                    </af:subform>
-                    
-                     
-                    <!--   <af:panelBox id="psave" partialTriggers="richUploadFile bSave"
-                                 visible="#{csvFileUploadMB.displayTable}">
-                        <af:spacer width="10" height="40"/>
-                        <af:button text="Save" id="bSave"
-                        action="#{csvFileUploadMB.saveDraftEmployees}"/>
-                    </af:panelBox> -->
+                    </af:panelFormLayout>
                 </f:facet>
                 <f:facet name="header"/>
                 <f:facet name="end"/>
