@@ -9,7 +9,7 @@
             <af:pageTemplate viewId="/oracle/templates/threeColumnTemplate.jspx" id="pt1">
                 <f:facet name="center">
                     <af:panelBox id="panelHeader" text="Upload and Process CSV File" background="light"
-                                 inlineStyle="text-align:center;" contentStyle="background: #eff2f5;"></af:panelBox>
+                                 inlineStyle="text-align:center;" contentStyle="background: #eff2f5;" showDisclosure="false"></af:panelBox>
                     <af:spacer width="10" height="25"/>
                     <af:panelBox id="input">
                         <af:inputFile id="richUploadFile" binding="#{csvFileUploadMB.richUploadFile}" label="File "
@@ -60,7 +60,7 @@
                                               columns="#{bindings.EmployeesDraftView12.hints.EmployeeId.displayWidth}"
                                               maximumLength="#{bindings.EmployeesDraftView12.hints.EmployeeId.precision}"
                                               shortDesc="#{bindings.EmployeesDraftView12.hints.EmployeeId.tooltip}"
-                                              id="it1">
+                                              id="it1" autoSubmit="true">
                                     <f:validator binding="#{row.bindings.EmployeeId.validator}"/>
                                 </af:inputText>
                             </af:column>
@@ -73,7 +73,7 @@
                                               columns="#{bindings.EmployeesDraftView12.hints.FirstName.displayWidth}"
                                               maximumLength="#{bindings.EmployeesDraftView12.hints.FirstName.precision}"
                                               shortDesc="#{bindings.EmployeesDraftView12.hints.FirstName.tooltip}"
-                                              id="it2">
+                                              id="it2" autoSubmit="true">
                                     <f:validator binding="#{row.bindings.FirstName.validator}"/>
                                 </af:inputText>
                             </af:column>
@@ -86,7 +86,7 @@
                                               columns="#{bindings.EmployeesDraftView12.hints.LastName.displayWidth}"
                                               maximumLength="#{bindings.EmployeesDraftView12.hints.LastName.precision}"
                                               shortDesc="#{bindings.EmployeesDraftView12.hints.LastName.tooltip}"
-                                              id="it3">
+                                              id="it3" autoSubmit="true">
                                     <f:validator binding="#{row.bindings.LastName.validator}"/>
                                 </af:inputText>
                             </af:column>
@@ -98,7 +98,7 @@
                                               required="#{bindings.EmployeesDraftView12.hints.Email.mandatory}"
                                               columns="#{bindings.EmployeesDraftView12.hints.Email.displayWidth}"
                                               maximumLength="#{bindings.EmployeesDraftView12.hints.Email.precision}"
-                                              shortDesc="#{bindings.EmployeesDraftView12.hints.Email.tooltip}" id="it4">
+                                              shortDesc="#{bindings.EmployeesDraftView12.hints.Email.tooltip}" id="it4" autoSubmit="true">
                                     <f:validator binding="#{row.bindings.Email.validator}"/>
                                 </af:inputText>
                             </af:column>
@@ -111,7 +111,7 @@
                                               columns="#{bindings.EmployeesDraftView12.hints.PhoneNumber.displayWidth}"
                                               maximumLength="#{bindings.EmployeesDraftView12.hints.PhoneNumber.precision}"
                                               shortDesc="#{bindings.EmployeesDraftView12.hints.PhoneNumber.tooltip}"
-                                              id="it5">
+                                              id="it5" autoSubmit="true">
                                     <f:validator binding="#{row.bindings.PhoneNumber.validator}"/>
                                 </af:inputText>
                             </af:column>
@@ -124,7 +124,7 @@
                                               columns="#{bindings.EmployeesDraftView12.hints.HireDate.displayWidth}"
                                               maximumLength="#{bindings.EmployeesDraftView12.hints.HireDate.precision}"
                                               shortDesc="#{bindings.EmployeesDraftView12.hints.HireDate.tooltip}"
-                                              id="it6">
+                                              id="it6" autoSubmit="true">
                                     <f:validator binding="#{row.bindings.HireDate.validator}"/>
                                 </af:inputText>
                             </af:column>
@@ -136,7 +136,8 @@
                                               required="#{bindings.EmployeesDraftView12.hints.JobId.mandatory}"
                                               columns="#{bindings.EmployeesDraftView12.hints.JobId.displayWidth}"
                                               maximumLength="#{bindings.EmployeesDraftView12.hints.JobId.precision}"
-                                              shortDesc="#{bindings.EmployeesDraftView12.hints.JobId.tooltip}" id="it7">
+                                              shortDesc="#{bindings.EmployeesDraftView12.hints.JobId.tooltip}" id="it7"
+                                               autoSubmit="true"> 
                                     <f:validator binding="#{row.bindings.JobId.validator}"/>
                                 </af:inputText>
                             </af:column>
@@ -149,7 +150,7 @@
                                               columns="#{bindings.EmployeesDraftView12.hints.Salary.displayWidth}"
                                               maximumLength="#{bindings.EmployeesDraftView12.hints.Salary.precision}"
                                               shortDesc="#{bindings.EmployeesDraftView12.hints.Salary.tooltip}"
-                                              id="it8">
+                                              id="it8" autoSubmit="true">
                                     <f:validator binding="#{row.bindings.Salary.validator}"/>
                                 </af:inputText>
                             </af:column>
@@ -162,7 +163,7 @@
                                               columns="#{bindings.EmployeesDraftView12.hints.CommissionPct.displayWidth}"
                                               maximumLength="#{bindings.EmployeesDraftView12.hints.CommissionPct.precision}"
                                               shortDesc="#{bindings.EmployeesDraftView12.hints.CommissionPct.tooltip}"
-                                              id="it9">
+                                              id="it9" autoSubmit="true">
                                     <f:validator binding="#{row.bindings.CommissionPct.validator}"/>
                                 </af:inputText>
                             </af:column>
@@ -175,7 +176,7 @@
                                               columns="#{bindings.EmployeesDraftView12.hints.ManagerId.displayWidth}"
                                               maximumLength="#{bindings.EmployeesDraftView12.hints.ManagerId.precision}"
                                               shortDesc="#{bindings.EmployeesDraftView12.hints.ManagerId.tooltip}"
-                                              id="it10">
+                                              id="it10" autoSubmit="true">
                                     <f:validator binding="#{row.bindings.ManagerId.validator}"/>
                                 </af:inputText>
                             </af:column>
@@ -188,7 +189,7 @@
                                               columns="#{bindings.EmployeesDraftView12.hints.DepartmentId.displayWidth}"
                                               maximumLength="#{bindings.EmployeesDraftView12.hints.DepartmentId.precision}"
                                               shortDesc="#{bindings.EmployeesDraftView12.hints.DepartmentId.tooltip}"
-                                              id="it11">
+                                              id="it11" autoSubmit="true">
                                     <f:validator binding="#{row.bindings.DepartmentId.validator}"/>
                                 </af:inputText>
                             </af:column>
