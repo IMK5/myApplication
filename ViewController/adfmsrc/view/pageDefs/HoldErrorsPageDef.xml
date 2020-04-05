@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel" version="12.2.1.9.14" id="HoldErrorsPageDef"
+                Package="view.pageDefs">
+  <parameters/>
+  <executables>
+    <variableIterator id="variables"/>
+    <iterator Binds="DataErrorsView1" RangeSize="25" DataControl="AppModuleDataControl" id="DataErrorsView1Iterator"/>
+    <searchRegion Binds="DataErrorsView1Iterator" Criteria=""
+                  Customizer="oracle.jbo.uicli.binding.JUSearchBindingCustomizer" id="DataErrorsView1Query"/>
+  </executables>
+  <bindings>
+    <tree IterBinding="DataErrorsView1Iterator" id="DataErrorsView1">
+      <nodeDefinition DefName="model.DataErrorsView" Name="DataErrorsView10">
+        <AttrNames>
+          <Item Value="Id"/>
+          <Item Value="Data"/>
+        </AttrNames>
+      </nodeDefinition>
+    </tree>
+  </bindings>
+</pageDefinition>

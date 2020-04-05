@@ -19,7 +19,12 @@ import javax.faces.component.UIViewRoot;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ValueChangeEvent;
 
+import model.EmployeesDraftImpl;
+
 import oracle.adf.model.BindingContext;
+import oracle.adf.model.binding.DCBindingContainer;
+import oracle.adf.model.binding.DCIteratorBinding;
+import oracle.adf.view.rich.component.rich.RichPopup;
 import oracle.adf.view.rich.component.rich.data.RichTable;
 import oracle.adf.view.rich.component.rich.input.RichInputFile;
 import oracle.adf.view.rich.component.rich.input.RichInputText;
@@ -31,6 +36,8 @@ import oracle.adf.view.rich.context.AdfFacesContext;
 import oracle.binding.BindingContainer;
 import oracle.binding.OperationBinding;
 
+import oracle.jbo.Row;
+
 import org.apache.myfaces.trinidad.model.UploadedFile;
 
 public class CsvFileUploadMB {
@@ -38,7 +45,7 @@ public class CsvFileUploadMB {
 
     private String errorMessage = "";
     private List<EmployeeDto> employeesList = new ArrayList();
-
+    private RichPopup popup;
     private boolean disableStartUploadButton = true;
     private boolean displayTable = false;
     private boolean disableCommitButton = true;
@@ -47,6 +54,7 @@ public class CsvFileUploadMB {
     private RichButton bSave;
     private FileInfoDto fileInfoDto = new FileInfoDto();
     private RichTable errorDataTable;
+    private RichTable draftTable;
     private RichPanelFormLayout panelForm;
     private RichInputFile richUploadFile;
     private RichInputText emploeeIdInput;
@@ -130,7 +138,7 @@ public class CsvFileUploadMB {
      */
     public String bSave_action() {
          
-        System.out.println("Calla  bSave_action ...");
+        System.out.println("Call  bSave_action ...");
         BindingContainer bindings = getBindings();
         OperationBinding operationBinding = bindings.getOperationBinding("Commit");
         Object result = operationBinding.execute();
@@ -138,6 +146,34 @@ public class CsvFileUploadMB {
             return null;
         }
         setDisplayTable(false);
+        showPopup();
+        return null;
+    }
+    
+    /**
+     * Validate data and submit them to DB
+     * @return
+     */
+    public String submit_action() {
+        System.out.println("Calla  submit_action ...");
+        // Get data from table 
+        DCBindingContainer dcBindings = 
+                (DCBindingContainer)BindingContext.getCurrent().getCurrentBindingsEntry();
+        DCIteratorBinding iterBind= (DCIteratorBinding)dcBindings.get("EmployeesDraftView1Iterator"); 
+        Row[] rows = iterBind.getAllRowsInRange();  
+        Row r= rows[1];
+        r.getStructureDef();
+       
+        for (Row row : rows) {  
+         String email= (String)row.getAttribute("Email");
+            System.out.println("email ..."+email);
+            
+        }   
+        // Call validation data 
+        
+        // Submit date to DB
+        
+        showPopup();
         return null;
     }
 
@@ -190,6 +226,7 @@ public class CsvFileUploadMB {
         }
         return tempList;
     }
+    
  /*
     public String saveDraftEmployees() {
         System.out.println("Call  saveDraftEmployees...");
@@ -281,7 +318,11 @@ public class CsvFileUploadMB {
     }
     
     
-
+    public void showPopup() {
+        RichPopup.PopupHints hints = new RichPopup.PopupHints();
+        this.getPopup().setAutoDismissalTimeout(3);
+        this.getPopup().show(hints);
+    }
 
     public void setUploadFileInputStream(InputStream uploadFileInputStream) {
         this.uploadFileInputStream = uploadFileInputStream;
@@ -438,4 +479,20 @@ public class CsvFileUploadMB {
         return displayStructureDataLink;
     }
 
+    public void setDraftTable(RichTable draftTable) {
+        this.draftTable = draftTable;
+    }
+
+    public RichTable getDraftTable() {
+        return draftTable;
+    }
+
+
+    public void setPopup(RichPopup popup) {
+        this.popup = popup;
+    }
+
+    public RichPopup getPopup() {
+        return popup;
+    }
 }

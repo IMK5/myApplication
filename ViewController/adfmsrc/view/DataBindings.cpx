@@ -9,6 +9,7 @@
     <page path="/HoldErrors.jsf" usageId="view_HoldErrorsPageDef"/>
     <page path="/test.jsf" usageId="view_testPageDef"/>
     <page path="/updateErrorDataStructure.jsf" usageId="view_untitled1PageDef1"/>
+    <page path="/validationData.jsf" usageId="view_validationDataPageDef"/>
   </pageMap>
   <pageDefinitionUsages>
     <page id="view_displayPageDef" path="view.pageDefs.displayPageDef"/>
@@ -18,6 +19,7 @@
     <page id="view_HoldErrorsPageDef" path="view.pageDefs.HoldErrorsPageDef"/>
     <page id="view_testPageDef" path="view.pageDefs.testPageDef"/>
     <page id="view_untitled1PageDef1" path="view.pageDefs.untitled1PageDef1"/>
+    <page id="view_validationDataPageDef" path="view.pageDefs.validationDataPageDef"/>
   </pageDefinitionUsages>
   <dataControlUsages>
     <BC4JDataControl id="AppModuleDataControl" Package="model"

@@ -3,6 +3,13 @@
 <f:view xmlns:f="http://java.sun.com/jsf/core" xmlns:af="http://xmlns.oracle.com/adf/faces/rich"
         xmlns:h="http://java.sun.com/jsf/html">
     <af:document title="uploadFile.jsf" id="d1">
+    <af:popup id="popup" animate="true" contentDelivery="lazyUncached" autoDismissalTimeout="2"
+                  binding="#{csvFileUploadMB.popup}">
+            <af:panelGroupLayout id="pgl1" layout="horizontal">
+                <!--<af:image source="#{resource['images:success.png']}" id="i1"/>-->
+                <af:outputFormatted value="Your changes have been saved" id="of1"/>
+            </af:panelGroupLayout>
+        </af:popup>
         <af:messages id="m1"/>
         <!-- <af:message for="uploadForm" infoStyle="color: green;" errorStyle="color: red;" id="msg"/>-->
         <af:form id="uploadForm" usesUpload="true">
@@ -40,6 +47,7 @@
                         <af:spacer width="10" height="25"/>
                         <af:table value="#{bindings.EmployeesDraftView12.collectionModel}" var="row"
                                   rows="#{bindings.EmployeesDraftView12.rangeSize}"
+                                  binding="#{csvFileUploadMB.draftTable}"  
                                   emptyText="#{bindings.EmployeesDraftView12.viewable ? 'No data to display.' : 'Access Denied.'}"
                                   scrollPolicy="page" rowBandingInterval="0" fetchSize="20"
                                   selectedRowKeys="#{bindings.EmployeesDraftView12.collectionModel.selectedRow}"
@@ -195,8 +203,10 @@
                             </af:column>
                         </af:table>
                         <af:panelBox id="pSave">
-                            <af:button text="Commit" id="bSave" autoSubmit="true" immediate="true"
+                            <af:button text="Save" id="bSave" autoSubmit="true" immediate="true"
                                        action="#{csvFileUploadMB.bSave_action}"/>
+                           <af:button text="Submit" id="bSubmit" autoSubmit="true" immediate="true"
+                                       action="#{csvFileUploadMB.submit_action}"/>
                         </af:panelBox>
                     </af:panelFormLayout>
                 </f:facet>
