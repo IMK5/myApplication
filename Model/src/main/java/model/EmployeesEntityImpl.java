@@ -6,6 +6,7 @@ import java.sql.Timestamp;
 
 import oracle.jbo.Key;
 import oracle.jbo.RowIterator;
+import oracle.jbo.domain.DBSequence;
 import oracle.jbo.server.EntityDefImpl;
 import oracle.jbo.server.EntityImpl;
 // ---------------------------------------------------------------------
@@ -56,6 +57,7 @@ public class EmployeesEntityImpl extends EntityImpl {
             return vals;
         }
     }
+
     public static final int EMPLOYEEID = AttributesEnum.EmployeeId.index();
     public static final int FIRSTNAME = AttributesEnum.FirstName.index();
     public static final int LASTNAME = AttributesEnum.LastName.index();
@@ -79,18 +81,25 @@ public class EmployeesEntityImpl extends EntityImpl {
     }
 
     /**
+     * @return the definition object for this instance class.
+     */
+    public static synchronized EntityDefImpl getDefinitionObject() {
+        return EntityDefImpl.findDefObject("model.EmployeesEntity");
+    }
+
+    /**
      * Gets the attribute value for EmployeeId, using the alias name EmployeeId.
      * @return the value of EmployeeId
      */
-    public Integer getEmployeeId() {
-        return (Integer) getAttributeInternal(EMPLOYEEID);
+    public DBSequence getEmployeeId() {
+        return (DBSequence) getAttributeInternal(EMPLOYEEID);
     }
 
     /**
      * Sets <code>value</code> as the attribute value for EmployeeId.
      * @param value value to set the EmployeeId
      */
-    public void setEmployeeId(Integer value) {
+    public void setEmployeeId(DBSequence value) {
         setAttributeInternal(EMPLOYEEID, value);
     }
 
@@ -301,15 +310,10 @@ public class EmployeesEntityImpl extends EntityImpl {
 
      * @return a Key object based on given key constituents.
      */
-    public static Key createPrimaryKey(Integer employeeId) {
+    public static Key createPrimaryKey(DBSequence employeeId) {
         return new Key(new Object[] { employeeId });
     }
 
-    /**
-     * @return the definition object for this instance class.
-     */
-    public static synchronized EntityDefImpl getDefinitionObject() {
-        return EntityDefImpl.findDefObject("model.EmployeesEntity");
-    }
+
 }
 

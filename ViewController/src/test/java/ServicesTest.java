@@ -55,14 +55,14 @@ public class ServicesTest {
     @Test
     public void convertStringToDateTest() throws ParseException {
         String sDate = "17-JUN-03";
-        Date date = service.convertStringToDate(sDate);
+        Date date = service.convertStringToDate(sDate,"dd-MMM-yy");
         assertEquals(date.toString(), "Tue Jun 17 00:00:00 AST 2003");
     }
 
     @Test(expected = Exception.class)
     public void convertStringToDateThrowsExceptionTest() throws ParseException {
         String sDate = "17-05-03";
-        Date date = service.convertStringToDate(sDate);
+        Date date = service.convertStringToDate(sDate,"dd-MMM-yy");
     }
 
     private EmployeeDto buildEmployeeDto() throws ParseException {
@@ -72,7 +72,7 @@ public class ServicesTest {
         dto.setLastName("King");
         dto.setEmail("BOB@SKI.COM");
         dto.setPhoneNumber("515.123.4567");
-        Date date = service.convertStringToDate("17-Jun-03");
+        Date date = service.convertStringToDate("17-Jun-03","dd-MMM-yy");
         dto.setHireDate(date);
         dto.setJobId("AD_PRES");
         dto.setSalary(24000L);

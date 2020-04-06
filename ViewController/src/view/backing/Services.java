@@ -8,6 +8,11 @@ import java.text.SimpleDateFormat;
 
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.faces.application.FacesMessage;
+import javax.faces.validator.ValidatorException;
 
 import model.AppModuleImpl;
 
@@ -26,6 +31,7 @@ import org.apache.myfaces.trinidad.model.UploadedFile;
 public class Services {
 
     private ADFLogger logger = ADFLogger.createADFLogger(this.getClass());
+
     /**
      * Saves Employees list in DB
      * @param dtoList
@@ -51,7 +57,7 @@ public class Services {
 
 
     }
-    
+
     /**
      * Saves Employees_Draft list in DB
      * @param dtoList
@@ -61,7 +67,8 @@ public class Services {
         ApplicationModule am = getConfig();
         try {
             AppModuleImpl service = (AppModuleImpl) am;
-            ViewObject vo = service.getEmployeesDraftView1();;
+            ViewObject vo = service.getEmployeesDraftView1();
+            ;
 
             for (EmployeeDto dto : dtoList) {
                 createEmployeeRow(vo, dto);
@@ -77,34 +84,36 @@ public class Services {
 
 
     }
+
     /**
      *
      * @param dtoList List<EmployeeDto> EmployeesDraft
      * @param wrongDataList List of Error_Data
      * @throws Exception
      */
-    public void saveEmployees_Draft_AND_Error_Data(List<EmployeeDto> dtoList, List<String> wrongDataList) throws Exception {
+    public void saveEmployees_Draft_AND_Error_Data(List<EmployeeDto> dtoList,
+                                                   List<String> wrongDataList) throws Exception {
         logger.info("call saveEmployees_Draft_AND_Error_Data ..");
         ApplicationModule am = getConfig();
         try {
             AppModuleImpl service = (AppModuleImpl) am;
             ViewObject vo = service.getEmployeesDraftView1();
             ViewObject ve = service.getDataErrorsView1();
-            // Save EmployeesDraft in DB 
-            if(dtoList!= null && !dtoList.isEmpty()){
-                    for (EmployeeDto dto : dtoList) {
-                        createEmployeeRow(vo, dto);
-                    }
+            // Save EmployeesDraft in DB
+            if (dtoList != null && !dtoList.isEmpty()) {
+                for (EmployeeDto dto : dtoList) {
+                    createEmployeeRow(vo, dto);
                 }
-            // Save Erro data in DB 
-            if(wrongDataList!= null && !wrongDataList.isEmpty()){
-                    for (String wrongData : wrongDataList) {
-                        System.out.println("error data  : " + wrongData);
-                        Row row = ve.createRow();
-                        row.setAttribute("Data", wrongData);
-                        ve.insertRow(row);
-                    }
+            }
+            // Save Erro data in DB
+            if (wrongDataList != null && !wrongDataList.isEmpty()) {
+                for (String wrongData : wrongDataList) {
+                    System.out.println("error data  : " + wrongData);
+                    Row row = ve.createRow();
+                    row.setAttribute("Data", wrongData);
+                    ve.insertRow(row);
                 }
+            }
             // Commit transaction
             vo.executeQuery();
             ve.executeQuery();
@@ -139,32 +148,65 @@ public class Services {
 
     }
 
-    public void updateDataStructure(EmployeeDto dto) throws Exception{
-            System.out.println("Call Services.updateDataStructure ...");
-            ApplicationModule am = getConfig();
-            try {
-                AppModuleImpl service = (AppModuleImpl) am;
-                ViewObject employeeVO = service.getEmployeesDraftView1();
-                ViewObject dataErrorVO = service.getDataErrorsView1();
-                
-                //Step1 : save Employee_Draft in DB
-                createEmployeeRow(employeeVO, dto);
-                employeeVO.executeQuery();
-              
-                // Step2: delete ERROR_DATA row from DB
-                dataErrorVO.setWhereClause("Id=" + dto.getEmploeeId());
-                Row delRow = dataErrorVO.first();
+    public void saveFinalEmployeeAndDeleteDraftEmployee(Row[] rows) throws ParseException {
+        System.out.println("Call Services.saveFinalEmployeeAndDeleteDraftEmployee ...");
+        ApplicationModule am = getConfig();
+        AppModuleImpl service = (AppModuleImpl) am;
+        ViewObject draftEmployeeVO = service.getEmployeesDraftView1();
+        ViewObject finalEmployeeVO = service.getEmployeesView1();
+        try {
+            for (Row row : rows) {
+                //Step1 : save Employee in DB
+                Row finalEmpRow = createEmployee(finalEmployeeVO, row);
+                finalEmployeeVO.insertRow(finalEmpRow);
+                finalEmployeeVO.executeQuery();
+
+                // Step2: delete draftEmp row from DB
+                String draftEmpId = row.getAttribute(Template.EMPLOUYEE_ID_ID).toString();
+                draftEmployeeVO.setWhereClause("Id=" + draftEmpId);
+                Row delRow = draftEmployeeVO.first();
                 delRow.remove();
-                dataErrorVO.executeQuery();
-                System.out.println("Delete from Error_Data Id : "+dto.getEmploeeId());
-                // Step3: commit transaction
-                service.getTransaction().commit();
-               
-            } finally {
-                Configuration.releaseRootApplicationModule(am, true);
+                draftEmployeeVO.executeQuery();
+
             }
-        
+            // Step3: commit transaction
+            service.getTransaction().commit();
+            refreshEmpDraftTable("EmployeesDraftView1Iterator");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            service.getTransaction().rollback();
+        } finally {
+            Configuration.releaseRootApplicationModule(am, true);
         }
+    }
+
+    public void updateDataStructure(EmployeeDto dto) throws Exception {
+        System.out.println("Call Services.updateDataStructure ...");
+        ApplicationModule am = getConfig();
+        try {
+            AppModuleImpl service = (AppModuleImpl) am;
+            ViewObject employeeVO = service.getEmployeesDraftView1();
+            ViewObject dataErrorVO = service.getDataErrorsView1();
+
+            //Step1 : save Employee_Draft in DB
+            createEmployeeRow(employeeVO, dto);
+            employeeVO.executeQuery();
+
+            // Step2: delete ERROR_DATA row from DB
+            dataErrorVO.setWhereClause("Id=" + dto.getEmploeeId());
+            Row delRow = dataErrorVO.first();
+            delRow.remove();
+            dataErrorVO.executeQuery();
+            System.out.println("Delete from Error_Data Id : " + dto.getEmploeeId());
+            // Step3: commit transaction
+            service.getTransaction().commit();
+
+        } finally {
+            Configuration.releaseRootApplicationModule(am, true);
+        }
+
+    }
 
     public void deleteErrorDataById(int id) {
         logger.info("call deleteErrorDataById .. id= : " + id);
@@ -197,17 +239,51 @@ public class Services {
     private void createEmployeeRow(ViewObject vo, EmployeeDto dto) {
         Row row = vo.createRow();
         row.setAttribute("EmployeeId", dto.getEmploeeId());
-        row.setAttribute("FirstName", dto.getFirstName());
-        row.setAttribute("LastName", dto.getLastName());
-        row.setAttribute("Email", dto.getEmail());
-        row.setAttribute("PhoneNumber", dto.getPhoneNumber());
-        row.setAttribute("HireDate", dto.getHireDate());
-        row.setAttribute("JobId", dto.getJobId());
-        row.setAttribute("Salary", dto.getSalary());
-        row.setAttribute("CommissionPct", dto.getCommissionPct());
-        row.setAttribute("ManagerId", dto.getManagerId());
-        row.setAttribute("DepartmentId", dto.getDepartmentId());
+        row.setAttribute(Template.EMPLOYEE_FIRST_NAME, dto.getFirstName());
+        row.setAttribute(Template.EMPLOYEE_LAST_NAME, dto.getLastName());
+        row.setAttribute(Template.EMPLOYEE_EMAIL, dto.getEmail());
+        row.setAttribute(Template.EMPLOYEE_PHONE_NUMBER, dto.getPhoneNumber());
+        row.setAttribute(Template.EMPLOYEE_HIRE_DATE, dto.getHireDate());
+        row.setAttribute(Template.EMPLOYEE_JOB_ID, dto.getJobId());
+        row.setAttribute(Template.EMPLOYEE_SALARY, dto.getSalary());
+        row.setAttribute(Template.EMPLOYEE_COMMISSION_PCT, dto.getCommissionPct());
+        row.setAttribute(Template.EMPLOYEE_MANAGER_ID, dto.getManagerId());
+        row.setAttribute(Template.EMPLOYEE_DEPARTMENT_ID, dto.getDepartmentId());
         vo.insertRow(row);
+
+    }
+
+    private Row createEmployee(ViewObject vo, Row draftRow) throws ParseException {
+        Row row = vo.createRow();
+        row.setAttribute("EmployeeId", draftRow.getAttribute("EmployeeId"));
+        row.setAttribute(Template.EMPLOYEE_FIRST_NAME, draftRow.getAttribute(Template.EMPLOYEE_FIRST_NAME));
+        row.setAttribute(Template.EMPLOYEE_LAST_NAME, draftRow.getAttribute(Template.EMPLOYEE_LAST_NAME));
+        row.setAttribute(Template.EMPLOYEE_EMAIL, draftRow.getAttribute(Template.EMPLOYEE_EMAIL));
+        row.setAttribute(Template.EMPLOYEE_PHONE_NUMBER, draftRow.getAttribute(Template.EMPLOYEE_PHONE_NUMBER));
+        String sDate = (String) draftRow.getAttribute(Template.EMPLOYEE_HIRE_DATE);
+        if (!StringUtils.isEmpty(sDate)) {
+            Date date = convertStringToDate(sDate, "E MMM dd HH:mm:ss Z yyyy");
+            row.setAttribute(Template.EMPLOYEE_HIRE_DATE, date);
+        }
+
+        row.setAttribute(Template.EMPLOYEE_JOB_ID, draftRow.getAttribute(Template.EMPLOYEE_JOB_ID));
+        String sal = (String) draftRow.getAttribute(Template.EMPLOYEE_SALARY);
+        if (!StringUtils.isEmpty(sal)) {
+            row.setAttribute(Template.EMPLOYEE_SALARY, Long.valueOf(sal));
+        }
+        String pct = (String) draftRow.getAttribute(Template.EMPLOYEE_COMMISSION_PCT);
+        if (!StringUtils.isEmpty(pct)) {
+            row.setAttribute(Template.EMPLOYEE_COMMISSION_PCT, Integer.valueOf(pct));
+        }
+        String manageId = (String) draftRow.getAttribute(Template.EMPLOYEE_MANAGER_ID);
+        if (!StringUtils.isEmpty(manageId)) {
+            row.setAttribute(Template.EMPLOYEE_MANAGER_ID, Integer.valueOf(manageId));
+        }
+        String depId = (String) draftRow.getAttribute(Template.EMPLOYEE_DEPARTMENT_ID);
+        if (!StringUtils.isEmpty(depId)) {
+            row.setAttribute(Template.EMPLOYEE_DEPARTMENT_ID, Integer.valueOf(depId));
+        }
+        return row;
 
     }
 
@@ -259,7 +335,7 @@ public class Services {
         employee.setEmail(empl[3]);
         employee.setPhoneNumber(empl[4]);
         if (empl[5] != null && !StringUtils.isBlank(empl[5])) {
-            Date date = convertStringToDate(empl[5]);
+            Date date = convertStringToDate(empl[5], "dd-MMM-yy");
             employee.setHireDate(date);
         }
 
@@ -282,11 +358,12 @@ public class Services {
         return employee;
     }
 
-    public Date convertStringToDate(String dob) throws ParseException {
+
+    public Date convertStringToDate(String sDate, String format) throws ParseException {
         //Instantiating the SimpleDateFormat class
-        SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yy");
+        SimpleDateFormat formatter = new SimpleDateFormat(format);
         //Parsing the given String to Date object
-        Date date = formatter.parse(dob);
+        Date date = formatter.parse(sDate);
         return date;
     }
 
@@ -313,7 +390,8 @@ public class Services {
 
         return result;
     }
-/**
+
+    /**
      * Build summary of uploaded file
      * @param uploadedFile
      * @return FileInfoDto
@@ -329,7 +407,7 @@ public class Services {
     public boolean isCsvFile(UploadedFile uploadedFile) {
         return uploadedFile.getFilename().endsWith("csv");
     }
-    
+
     /**
      * refresh table
      * @param viewIterartor
@@ -337,9 +415,25 @@ public class Services {
     public void refreshEmpDraftTable(String viewIterartor) {
         DCIteratorBinding iter = (DCIteratorBinding) BindingContext.getCurrent()
                                                                    .getCurrentBindingsEntry()
-                                                                   .get(viewIterartor);  
+                                                                   .get(viewIterartor);
         iter.getViewObject().executeQuery();
     }
 
+    public void emailValidator(String email_address) {
+
+        String email_pattern = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+        if (!StringUtils.isEmpty(email_address)) {
+            Pattern patn = Pattern.compile(email_pattern);
+            Matcher matcher = patn.matcher(email_address);
+
+            String Error_Message = "You have entered an invalid email address. Please try again.";
+
+            if (!matcher.matches()) {
+                throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, Error_Message, null));
+            }
+        }
+
+
+    }
 
 }

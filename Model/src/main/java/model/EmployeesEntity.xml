@@ -17,15 +17,18 @@
   </DesignTime>
   <Attribute
     Name="EmployeeId"
-    IsNotNull="true"
     Precision="6"
     Scale="0"
     ColumnName="EMPLOYEE_ID"
     SQLType="NUMERIC"
-    Type="java.lang.Integer"
+    Type="oracle.jbo.domain.DBSequence"
     ColumnType="NUMBER"
     TableName="EMPLOYEES"
-    PrimaryKey="true"/>
+    PrimaryKey="true"
+    IsUpdateable="while_insert"
+    DefaultValue="@0"
+    Domain="oracle.jbo.domain.DBSequence"
+    RetrievedOnInsert="true"/>
   <Attribute
     Name="FirstName"
     Precision="20"

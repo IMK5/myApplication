@@ -13,13 +13,15 @@ import java.text.ParseException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
 import javax.faces.component.UIViewRoot;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ValueChangeEvent;
-
-import model.EmployeesDraftImpl;
+import javax.faces.validator.ValidatorException;
 
 import oracle.adf.model.BindingContext;
 import oracle.adf.model.binding.DCBindingContainer;
@@ -145,7 +147,7 @@ public class CsvFileUploadMB {
         if (!operationBinding.getErrors().isEmpty()) {
             return null;
         }
-        setDisplayTable(false);
+       // setDisplayTable(false);
         showPopup();
         return null;
     }
@@ -161,14 +163,20 @@ public class CsvFileUploadMB {
                 (DCBindingContainer)BindingContext.getCurrent().getCurrentBindingsEntry();
         DCIteratorBinding iterBind= (DCIteratorBinding)dcBindings.get("EmployeesDraftView1Iterator"); 
         Row[] rows = iterBind.getAllRowsInRange();  
-        Row r= rows[1];
-        r.getStructureDef();
+        
+        // Validation data
+        callValidationData(rows);
        
-        for (Row row : rows) {  
-         String email= (String)row.getAttribute("Email");
-            System.out.println("email ..."+email);
-            
-        }   
+       // for (Row row : rows) {
+
+            try {
+                services.saveFinalEmployeeAndDeleteDraftEmployee(rows);
+            } catch (ParseException e) {
+                e.printStackTrace();
+                showMessage(FacesMessage.SEVERITY_FATAL, "ERROR", e.getMessage());
+            }
+
+       // }   
         // Call validation data 
         
         // Submit date to DB
@@ -277,6 +285,31 @@ public class CsvFileUploadMB {
             throw new Exception(errorMessage);
 
         }
+
+    }
+    private void callValidationData(Row[] rows) {
+        for(Row row: rows){
+            String email = (String) row.getAttribute(Template.EMPLOYEE_EMAIL);
+             
+                services.emailValidator(email);
+                
+                } 
+            
+            }
+    
+    
+    public void emailValidator(FacesContext facesContext, UIComponent uIComponent, Object object) {
+        String email_address = object.toString();
+            String email_pattern = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+            
+            Pattern patn = Pattern.compile(email_pattern);
+            Matcher matcher=patn.matcher(email_address);
+            
+            String Error_Message = "You have entered an invalid email address. Please try again.";
+            
+            if(!matcher.matches()){
+                throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR,Error_Message,null));
+            }
 
     }
 
@@ -495,4 +528,7 @@ public class CsvFileUploadMB {
     public RichPopup getPopup() {
         return popup;
     }
+
+
+   
 }

@@ -25,7 +25,7 @@
                     </af:panelBox>
                     <af:spacer width="10" height="25"/>
                     <af:panelFormLayout id="s1" visible="#{csvFileUploadMB.displayTable}"
-                                        partialTriggers="richUploadFile bSave" binding="#{csvFileUploadMB.panelForm}">
+                                        partialTriggers="richUploadFile" binding="#{csvFileUploadMB.panelForm}">
                         <af:panelBox id="pinfo" text="File information" background="light"
                                      contentStyle="background: #eff2f5;" showDisclosure="false">
                             <af:inputText label="File Name :" value="#{csvFileUploadMB.fileInfoDto.fileName}"
