@@ -40,6 +40,7 @@ import oracle.binding.OperationBinding;
 
 import oracle.jbo.Row;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.myfaces.trinidad.model.UploadedFile;
 
 public class CsvFileUploadMB {
@@ -60,6 +61,7 @@ public class CsvFileUploadMB {
     private RichPanelFormLayout panelForm;
     private RichInputFile richUploadFile;
     private RichInputText emploeeIdInput;
+    private RichInputText emailInputText;
 
 
     private InputStream uploadFileInputStream;
@@ -68,8 +70,8 @@ public class CsvFileUploadMB {
     private EmployeeDto empDto = new EmployeeDto();
 
     private Services services = new Services();
+    private ValidationRules validation = new ValidationRules();
     private RichPanelBox panelTable;
-    
 
 
     /**
@@ -98,7 +100,7 @@ public class CsvFileUploadMB {
             fileInfoDto = services.buildFileInfo(uploadedFile);
             List<EmployeeDto> dtoList = buildData(br, uploadedFile);
             setEmployeesList(dtoList);
-         
+
             getFileInfoDto().setErrorRecordsNumber(getWrongDataList().size());
             getFileInfoDto().setRightDataNumber(dtoList.size());
 
@@ -107,13 +109,13 @@ public class CsvFileUploadMB {
 
             //  Refresh table;
             services.refreshEmpDraftTable("EmployeesDraftView1Iterator");
-            if(getWrongDataList().size()>0){
-                    setDisplayStructureDataLink(true);
-                }
+            if (getWrongDataList().size() > 0) {
+                setDisplayStructureDataLink(true);
+            }
 
             setDisplayTable(true);
             AdfFacesContext.getCurrentInstance().addPartialTarget(getPanelForm());
-            
+
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             showMessage(FacesMessage.SEVERITY_ERROR, "ERROR", e.getMessage());
@@ -134,12 +136,13 @@ public class CsvFileUploadMB {
 
 
     }
+
     /**
      * Save EmployeesDraft list in DB
      * @return String
      */
     public String bSave_action() {
-         
+
         System.out.println("Call  bSave_action ...");
         BindingContainer bindings = getBindings();
         OperationBinding operationBinding = bindings.getOperationBinding("Commit");
@@ -147,44 +150,47 @@ public class CsvFileUploadMB {
         if (!operationBinding.getErrors().isEmpty()) {
             return null;
         }
-       // setDisplayTable(false);
+        // setDisplayTable(false);
         showPopup();
         return null;
     }
-    
+
     /**
      * Validate data and submit them to DB
      * @return
      */
     public String submit_action() {
         System.out.println("Calla  submit_action ...");
-        // Get data from table 
-        DCBindingContainer dcBindings = 
-                (DCBindingContainer)BindingContext.getCurrent().getCurrentBindingsEntry();
-        DCIteratorBinding iterBind= (DCIteratorBinding)dcBindings.get("EmployeesDraftView1Iterator"); 
-        Row[] rows = iterBind.getAllRowsInRange();  
-        
+        // Get data from table
+        DCBindingContainer dcBindings = (DCBindingContainer) BindingContext.getCurrent().getCurrentBindingsEntry();
+        DCIteratorBinding iterBind = (DCIteratorBinding) dcBindings.get("EmployeesDraftView1Iterator");
+        Row[] rows = iterBind.getAllRowsInRange();
+
         // Validation data
-        callValidationData(rows);
-       
-       // for (Row row : rows) {
+      //  if (callValidationData(rows)) {
 
             try {
                 services.saveFinalEmployeeAndDeleteDraftEmployee(rows);
+                showPopup();
             } catch (ParseException e) {
                 e.printStackTrace();
-                showMessage(FacesMessage.SEVERITY_FATAL, "ERROR", e.getMessage());
-            }
+                shoeInlineMessage( e.getMessage());
+            } catch (Exception ex) {
+            ex.printStackTrace();
+            shoeInlineMessage( ex.getMessage()!= null ? ex.getCause().toString(): ex.getMessage());
+        }
 
-       // }   
-        // Call validation data 
-        
-        // Submit date to DB
-        
-        showPopup();
+        // }
+
         return null;
-    }
 
+    }
+    public void shoeInlineMessage(String message){
+            FacesMessage msg = new FacesMessage(message);
+            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+            FacesContext fctx = FacesContext.getCurrentInstance();
+            fctx.addMessage(null, msg);
+        }
 
     /**
      * Build data from CSV file
@@ -234,8 +240,8 @@ public class CsvFileUploadMB {
         }
         return tempList;
     }
-    
- /*
+
+    /*
     public String saveDraftEmployees() {
         System.out.println("Call  saveDraftEmployees...");
         try {
@@ -287,33 +293,38 @@ public class CsvFileUploadMB {
         }
 
     }
-    private void callValidationData(Row[] rows) {
-        for(Row row: rows){
+
+    private boolean callValidationData(Row[] rows) {
+        for (Row row : rows) {
             String email = (String) row.getAttribute(Template.EMPLOYEE_EMAIL);
-             
-                services.emailValidator(email);
-                
-                } 
-            
-            }
-    
-    
-    public void emailValidator(FacesContext facesContext, UIComponent uIComponent, Object object) {
-        String email_address = object.toString();
-            String email_pattern = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
-            
-            Pattern patn = Pattern.compile(email_pattern);
-            Matcher matcher=patn.matcher(email_address);
-            
-            String Error_Message = "You have entered an invalid email address. Please try again.";
-            
-            if(!matcher.matches()){
-                throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR,Error_Message,null));
+            String empName = (String) row.getAttribute(Template.EMPLOYEE_FIRST_NAME);
+
+            boolean emailVal = validation.emailValidator(email);
+            if (!emailVal) {
+                return false;
             }
 
+        }
+        return true;
     }
 
-/*
+
+    public void emailValidator(FacesContext facesContext, UIComponent uIComponent, Object object) {
+        String email_address = object.toString();
+        String email_pattern = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+        if (!StringUtils.isBlank(email_address)) {
+                Pattern patn = Pattern.compile(email_pattern);
+                Matcher matcher = patn.matcher(email_address);
+
+                String Error_Message = "You have entered an invalid email address. Please try again.";
+
+                if (!matcher.matches()) {
+                    throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, Error_Message, null));
+                }
+            }
+    }
+
+    /*
     private void showMessage(UploadedFile uploadedFile, FacesMessage.Severity severity, String message1,
                              String message2) {
         FacesContext.getCurrentInstance()
@@ -331,13 +342,13 @@ public class CsvFileUploadMB {
         richUploadFile.setValid(false);
     }
 
-     
+
     private void handleTable() {
         setEmployeesList(new ArrayList());
         setDisplayTable(false);
     }
 
-/**
+    /**
      * Get inputValue by component Id from UI
      * @param id
      * @return
@@ -349,8 +360,8 @@ public class CsvFileUploadMB {
         String val = inputText.getValue().toString();
         return val;
     }
-    
-    
+
+
     public void showPopup() {
         RichPopup.PopupHints hints = new RichPopup.PopupHints();
         this.getPopup().setAutoDismissalTimeout(3);
@@ -490,7 +501,7 @@ public class CsvFileUploadMB {
         return panelForm;
     }
 
- 
+
     public void setPanelTable(RichPanelBox panelTable) {
         this.panelTable = panelTable;
     }
@@ -530,5 +541,19 @@ public class CsvFileUploadMB {
     }
 
 
-   
+    public void setEmailInputText(RichInputText emailInputText) {
+        this.emailInputText = emailInputText;
+    }
+
+    public RichInputText getEmailInputText() {
+        return emailInputText;
+    }
+
+    public void setValidation(ValidationRules validation) {
+        this.validation = validation;
+    }
+
+    public ValidationRules getValidation() {
+        return validation;
+    }
 }

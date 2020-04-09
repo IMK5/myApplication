@@ -9,10 +9,12 @@
   BindingStyle="OracleName"
   CustomQuery="true"
   PageIterMode="Full"
-  ComponentClass="model.EmployeesDraftView1Impl">
+  ComponentClass="model.EmployeesDraftView1Impl"
+  RowClass="model.EmployeesDraftView1RowImpl">
   <DesignTime>
     <Attr Name="_isExpertMode" Value="true"/>
     <Attr Name="_codeGenFlag2" Value="Coll|VarAccess"/>
+    <Attr Name="_isCodegen" Value="true"/>
   </DesignTime>
   <SQLQuery><![CDATA[SELECT EmployeesDraft.EMPLOYEE_ID,
        EmployeesDraft.FIRST_NAME,
@@ -204,7 +206,7 @@ FROM EMPLOYEES_DRAFT EmployeesDraft]]></SQLQuery>
     ColumnType="NUMBER"
     AliasName="ID"
     Expression="ID"
-    SQLType="NUMERIC"/>
+    SQLType="INTEGER"/>
   <AttrArray Name="KeyAttributes">
     <Item Value="Id"/>
   </AttrArray>

@@ -8,11 +8,6 @@ import java.text.SimpleDateFormat;
 
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.faces.application.FacesMessage;
-import javax.faces.validator.ValidatorException;
 
 import model.AppModuleImpl;
 
@@ -148,7 +143,7 @@ public class Services {
 
     }
 
-    public void saveFinalEmployeeAndDeleteDraftEmployee(Row[] rows) throws ParseException {
+    public void saveFinalEmployeeAndDeleteDraftEmployee(Row[] rows) throws ParseException, Exception {
         System.out.println("Call Services.saveFinalEmployeeAndDeleteDraftEmployee ...");
         ApplicationModule am = getConfig();
         AppModuleImpl service = (AppModuleImpl) am;
@@ -157,25 +152,28 @@ public class Services {
         try {
             for (Row row : rows) {
                 //Step1 : save Employee in DB
-                Row finalEmpRow = createEmployee(finalEmployeeVO, row);
-                finalEmployeeVO.insertRow(finalEmpRow);
+                createEmployee(finalEmployeeVO, row);
+                //finalEmployeeVO.insertRow(finalEmpRow);
                 finalEmployeeVO.executeQuery();
 
                 // Step2: delete draftEmp row from DB
                 String draftEmpId = row.getAttribute(Template.EMPLOUYEE_ID_ID).toString();
                 draftEmployeeVO.setWhereClause("Id=" + draftEmpId);
+                draftEmployeeVO.executeQuery();
                 Row delRow = draftEmployeeVO.first();
                 delRow.remove();
-                draftEmployeeVO.executeQuery();
-
+                //draftEmployeeVO.executeQuery();
             }
             // Step3: commit transaction
             service.getTransaction().commit();
             refreshEmpDraftTable("EmployeesDraftView1Iterator");
 
         } catch (Exception e) {
+            System.out.println("rollback called ....");
             e.printStackTrace();
             service.getTransaction().rollback();
+            throw new Exception(e.getCause().toString());
+            
         } finally {
             Configuration.releaseRootApplicationModule(am, true);
         }
@@ -253,9 +251,9 @@ public class Services {
 
     }
 
-    private Row createEmployee(ViewObject vo, Row draftRow) throws ParseException {
+    private void createEmployee(ViewObject vo, Row draftRow) throws ParseException {
         Row row = vo.createRow();
-        row.setAttribute("EmployeeId", draftRow.getAttribute("EmployeeId"));
+        //row.setAttribute("EmployeeId", draftRow.getAttribute("EmployeeId"));
         row.setAttribute(Template.EMPLOYEE_FIRST_NAME, draftRow.getAttribute(Template.EMPLOYEE_FIRST_NAME));
         row.setAttribute(Template.EMPLOYEE_LAST_NAME, draftRow.getAttribute(Template.EMPLOYEE_LAST_NAME));
         row.setAttribute(Template.EMPLOYEE_EMAIL, draftRow.getAttribute(Template.EMPLOYEE_EMAIL));
@@ -273,7 +271,7 @@ public class Services {
         }
         String pct = (String) draftRow.getAttribute(Template.EMPLOYEE_COMMISSION_PCT);
         if (!StringUtils.isEmpty(pct)) {
-            row.setAttribute(Template.EMPLOYEE_COMMISSION_PCT, Integer.valueOf(pct));
+            row.setAttribute(Template.EMPLOYEE_COMMISSION_PCT, Double.valueOf(pct));
         }
         String manageId = (String) draftRow.getAttribute(Template.EMPLOYEE_MANAGER_ID);
         if (!StringUtils.isEmpty(manageId)) {
@@ -283,7 +281,7 @@ public class Services {
         if (!StringUtils.isEmpty(depId)) {
             row.setAttribute(Template.EMPLOYEE_DEPARTMENT_ID, Integer.valueOf(depId));
         }
-        return row;
+        vo.insertRow(row);
 
     }
 
@@ -419,21 +417,8 @@ public class Services {
         iter.getViewObject().executeQuery();
     }
 
-    public void emailValidator(String email_address) {
-
-        String email_pattern = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
-        if (!StringUtils.isEmpty(email_address)) {
-            Pattern patn = Pattern.compile(email_pattern);
-            Matcher matcher = patn.matcher(email_address);
-
-            String Error_Message = "You have entered an invalid email address. Please try again.";
-
-            if (!matcher.matches()) {
-                throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, Error_Message, null));
-            }
-        }
-
-
-    }
+    
+    
+    
 
 }
