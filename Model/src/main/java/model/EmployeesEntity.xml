@@ -10,7 +10,8 @@
   DBObjectName="EMPLOYEES"
   AliasName="EmployeesEntity"
   BindingStyle="OracleName"
-  RowClass="model.EmployeesEntityImpl">
+  RowClass="model.EmployeesEntityImpl"
+  xmlns:validation="http://xmlns.oracle.com/adfm/validation">
   <DesignTime>
     <Attr Name="_codeGenFlag2" Value="Access"/>
     <Attr Name="_isCodegen" Value="true"/>
@@ -67,6 +68,12 @@
     <DesignTime>
       <Attr Name="_DisplaySize" Value="25"/>
     </DesignTime>
+    <validation:RegExpValidationBean
+      Name="validateEmailStructure"
+      OnAttribute="Email"
+      Pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}"
+      Inverse="false"
+      ResId="model.EmployeesEntity.Email_Rule_0"/>
   </Attribute>
   <Attribute
     Name="PhoneNumber"
@@ -79,6 +86,13 @@
     <DesignTime>
       <Attr Name="_DisplaySize" Value="20"/>
     </DesignTime>
+    <validation:RegExpValidationBean
+      Name="PhoneNumberRuleStructure"
+      Severity="Warning"
+      OnAttribute="PhoneNumber"
+      Pattern="[0-9]{3}-?[0-9]{4}-?[0-9]{4}"
+      Inverse="false"
+      ResId="model.EmployeesEntity.PhoneNumber_Rule_0"/>
   </Attribute>
   <Attribute
     Name="HireDate"
@@ -263,4 +277,8 @@
       <Item Value="model.EmployeesEntity.ManagerId"/>
     </AttrArray>
   </Key>
+  <ResourceBundle>
+    <PropertiesBundle
+      PropertiesFile="model.ModelBundle"/>
+  </ResourceBundle>
 </Entity>

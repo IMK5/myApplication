@@ -9,11 +9,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import javax.faces.component.UIComponent;
+
 import model.AppModuleImpl;
 
 import oracle.adf.model.BindingContext;
 import oracle.adf.model.binding.DCIteratorBinding;
 import oracle.adf.share.logging.ADFLogger;
+import oracle.adf.view.rich.context.AdfFacesContext;
 
 import oracle.jbo.ApplicationModule;
 import oracle.jbo.Row;
@@ -143,39 +146,26 @@ public class Services {
 
     }
 
-    public void saveFinalEmployeeAndDeleteDraftEmployee(Row[] rows) throws ParseException, Exception {
+    public void saveFinalEmployeeAndDeleteDraftEmployee(AppModuleImpl appModule, Row[] rows) throws ParseException, Exception {
         System.out.println("Call Services.saveFinalEmployeeAndDeleteDraftEmployee ...");
-        ApplicationModule am = getConfig();
-        AppModuleImpl service = (AppModuleImpl) am;
-        ViewObject draftEmployeeVO = service.getEmployeesDraftView1();
-        ViewObject finalEmployeeVO = service.getEmployeesView1();
+    
+        ViewObject draftEmployeeVO = appModule.getEmployeesDraftView1();
+        ViewObject finalEmployeeVO = appModule.getEmployeesView1();
         try {
             for (Row row : rows) {
                 //Step1 : save Employee in DB
-                createEmployee(finalEmployeeVO, row);
-                //finalEmployeeVO.insertRow(finalEmpRow);
-                finalEmployeeVO.executeQuery();
-
+                createEmployeeVO(finalEmployeeVO, row);
+                
                 // Step2: delete draftEmp row from DB
                 String draftEmpId = row.getAttribute(Template.EMPLOUYEE_ID_ID).toString();
-                draftEmployeeVO.setWhereClause("Id=" + draftEmpId);
-                draftEmployeeVO.executeQuery();
-                Row delRow = draftEmployeeVO.first();
-                delRow.remove();
-                //draftEmployeeVO.executeQuery();
+                deleteRowById(draftEmployeeVO, "ID",draftEmpId);
             }
             // Step3: commit transaction
-            service.getTransaction().commit();
-            refreshEmpDraftTable("EmployeesDraftView1Iterator");
-
-        } catch (Exception e) {
-            System.out.println("rollback called ....");
-            e.printStackTrace();
-            service.getTransaction().rollback();
-            throw new Exception(e.getCause().toString());
+            appModule.getTransaction().commit();
+            refreshTable("EmployeesDraftView1Iterator");
             
         } finally {
-            Configuration.releaseRootApplicationModule(am, true);
+            Configuration.releaseRootApplicationModule(appModule, true);
         }
     }
 
@@ -251,9 +241,9 @@ public class Services {
 
     }
 
-    private void createEmployee(ViewObject vo, Row draftRow) throws ParseException {
-        Row row = vo.createRow();
-        //row.setAttribute("EmployeeId", draftRow.getAttribute("EmployeeId"));
+    private void createEmployeeVO(ViewObject vo, Row draftRow) throws ParseException {
+        Row row = vo.createRow(); 
+         //row.setAttribute("EmployeeId", draftRow.getAttribute("EmployeeId"));
         row.setAttribute(Template.EMPLOYEE_FIRST_NAME, draftRow.getAttribute(Template.EMPLOYEE_FIRST_NAME));
         row.setAttribute(Template.EMPLOYEE_LAST_NAME, draftRow.getAttribute(Template.EMPLOYEE_LAST_NAME));
         row.setAttribute(Template.EMPLOYEE_EMAIL, draftRow.getAttribute(Template.EMPLOYEE_EMAIL));
@@ -282,6 +272,7 @@ public class Services {
             row.setAttribute(Template.EMPLOYEE_DEPARTMENT_ID, Integer.valueOf(depId));
         }
         vo.insertRow(row);
+        vo.executeQuery();
 
     }
 
@@ -292,8 +283,9 @@ public class Services {
     public void saveWrongDataInDB(List<String> wrongDataList) {
         logger.info("Call   saveWrongDataInDB ...");
         ApplicationModule am = getConfig();
+        AppModuleImpl service = (AppModuleImpl) am;
         try {
-            AppModuleImpl service = (AppModuleImpl) am;
+            
             ViewObject vo = service.getDataErrorsView1();
             for (String wrongData : wrongDataList) {
                 System.out.println("error data  : " + wrongData);
@@ -309,6 +301,7 @@ public class Services {
         } catch (Exception e) {
             // showMessage(FacesMessage.SEVERITY_FATAL, "ERROR_DATA ERROR", e.getMessage());
             System.out.println("ERROR ..." + e.getMessage());
+            service.getTransaction().rollback();
         } finally {
             Configuration.releaseRootApplicationModule(am, true);
         }
@@ -410,15 +403,27 @@ public class Services {
      * refresh table
      * @param viewIterartor
      */
-    public void refreshEmpDraftTable(String viewIterartor) {
+    public void refreshTable(String viewIterartor) {
         DCIteratorBinding iter = (DCIteratorBinding) BindingContext.getCurrent()
                                                                    .getCurrentBindingsEntry()
                                                                    .get(viewIterartor);
         iter.getViewObject().executeQuery();
     }
 
-    
-    
-    
+/**
+     *
+     * @param vo; ViewObject
+     * @param IdAttributeName : attribute name of Id in DB
+     * @param idValue : value of Id
+     */
+    private void deleteRowById(ViewObject vo, String IdAttributeName ,String idValue) {
+        vo.setWhereClause(IdAttributeName+"=" + idValue);
+        vo.executeQuery();
+        Row delRow = vo.first();
+        delRow.remove();
+    }
 
+public void refreshComponentUI(UIComponent p1){
+        AdfFacesContext.getCurrentInstance().addPartialTarget(p1);
+    }
 }
