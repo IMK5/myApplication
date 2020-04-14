@@ -88,11 +88,11 @@
     </DesignTime>
     <validation:RegExpValidationBean
       Name="PhoneNumberRuleStructure"
-      Severity="Warning"
       OnAttribute="PhoneNumber"
       Pattern="[0-9]{3}-?[0-9]{4}-?[0-9]{4}"
       Inverse="false"
-      ResId="model.EmployeesEntity.PhoneNumber_Rule_0"/>
+      ResId="model.EmployeesEntity.PhoneNumber_Rule_0"
+      MessageFlavor="IGNORE_DETAILS"/>
   </Attribute>
   <Attribute
     Name="HireDate"

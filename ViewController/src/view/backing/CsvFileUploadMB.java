@@ -45,7 +45,7 @@ import oracle.jbo.Row;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.myfaces.trinidad.model.UploadedFile;
 
-public class CsvFileUploadMB extends AbstractMBConfig{
+public class CsvFileUploadMB extends AbstractMBConfig {
 
 
     private String errorMessage = "";
@@ -55,7 +55,6 @@ public class CsvFileUploadMB extends AbstractMBConfig{
     private boolean displayTable = false;
     private boolean disableCommitButton = true;
     private boolean displayStructureDataLink = false;
-    private boolean isRequiredField = false;
     private RichTable table;
     private RichButton bSave;
     private FileInfoDto fileInfoDto = new FileInfoDto();
@@ -64,8 +63,13 @@ public class CsvFileUploadMB extends AbstractMBConfig{
     private RichPanelFormLayout panelForm;
     private RichInputFile richUploadFile;
     private RichInputText emploeeIdInput;
+
+    private RichInputText lastNameInputText;
+    private RichInputText hireDateInputText;
+    private RichInputText jobIdInputText;
+
+
     private RichInputText emailInputText;
-    private RichInputText managerIdInputText ;
 
 
     private InputStream uploadFileInputStream;
@@ -146,11 +150,11 @@ public class CsvFileUploadMB extends AbstractMBConfig{
      * @return String
      */
     public String bSave_action() {
-        
+
         System.out.println("Call  bSave_action ...");
         setRequiredFieldsToFalse();
         // Remove validation
-      ///  FacesContext.getCurrentInstance().getMessages().remove();
+        ///  FacesContext.getCurrentInstance().getMessages().remove();
         BindingContainer bindings = getBindings();
         OperationBinding operationBinding = bindings.getOperationBinding("Commit");
         Object result = operationBinding.execute();
@@ -168,40 +172,41 @@ public class CsvFileUploadMB extends AbstractMBConfig{
      */
     public String submit_action() {
         System.out.println("Calla  submit_action ...");
-        
+
         // Get data from table
         DCBindingContainer dcBindings = (DCBindingContainer) BindingContext.getCurrent().getCurrentBindingsEntry();
         DCIteratorBinding iterBind = (DCIteratorBinding) dcBindings.get("EmployeesDraftView1Iterator");
         Row[] rows = iterBind.getAllRowsInRange();
         AppModuleImpl appModule = getConfig();
         // Validation data
-      //  if (callValidationData(rows)) {
-        if(requiredsFieldsValidated()){
-                try {
-                    services.saveFinalEmployeeAndDeleteDraftEmployee(appModule ,rows);
-                    showPopup();
-                } catch ( Exception e) {
-                    e.printStackTrace();
-                    shoeInlineMessage( e.getMessage());
-                    rollback(appModule);
-                } 
-            
-        }else{
-                setRequiredFields();
-            }
-            
 
-        // }
+        if(requiredsFieldsValidated()){
+
+            try {
+                services.saveFinalEmployeeAndDeleteDraftEmployee(appModule, rows);
+                showPopup();
+            } catch (Exception e) {
+                e.printStackTrace();
+                shoeInlineMessage(e.getMessage());
+                rollback(appModule);
+            }
+
+        } else {
+            setRequiredFieldsToTrue();
+
+        }
+
 
         return null;
 
     }
-    public void shoeInlineMessage(String message){
-            FacesMessage msg = new FacesMessage(message);
-            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-            FacesContext fctx = FacesContext.getCurrentInstance();
-            fctx.addMessage(null, msg);
-        }
+
+    public void shoeInlineMessage(String message) {
+        FacesMessage msg = new FacesMessage(message);
+        msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+        FacesContext fctx = FacesContext.getCurrentInstance();
+        fctx.addMessage(null, msg);
+    }
 
     /**
      * Build data from CSV file
@@ -305,43 +310,64 @@ public class CsvFileUploadMB extends AbstractMBConfig{
 
     }
 
-    private void setRequiredFields(){
+    private void setRequiredFieldsToTrue() {
         System.out.println("Set manadatories fiels ....");
+        getLastNameInputText().setRequired(true);
+        getLastNameInputText().setValid(true);
         getEmailInputText().setRequired(true);
-        getManagerIdInputText().setRequired(true);
+        getEmailInputText().setValid(true);
+        getHireDateInputText().setRequired(true);
+        getHireDateInputText().setValid(true);
+        getJobIdInputText().setRequired(true);
+        getJobIdInputText().setValid(true);
+        services.refreshComponentUI(getLastNameInputText());
+        shoeInlineMessage("Please check required fields !");
         services.refreshComponentUI(getEmailInputText());
-        shoeInlineMessage("Email should not be empty!");
-        services.refreshComponentUI(getManagerIdInputText());
-        shoeInlineMessage("Manager Id  should not be empty");
-       
-        
-        }
-    
-    private void setRequiredFieldsToFalse(){
+       // shoeInlineMessage("Email is required !");
+        services.refreshComponentUI(getHireDateInputText());
+       // shoeInlineMessage("Hired Date is required !");
+        services.refreshComponentUI(getJobIdInputText());
+       // shoeInlineMessage("Job Id  is required !");
+
+
+    }
+
+    private void setRequiredFieldsToFalse() {
         System.out.println("Set manadatories fiels to false....");
+        getLastNameInputText().setRequired(false);
+        getLastNameInputText().setValid(false);
         getEmailInputText().setRequired(false);
-        getManagerIdInputText().setRequired(false);
+        getEmailInputText().setValid(false);
+        getHireDateInputText().setRequired(false);
+        getHireDateInputText().setValid(false);
+        getJobIdInputText().setRequired(false);
+        getJobIdInputText().setValid(false);
+        services.refreshComponentUI(getLastNameInputText());
         services.refreshComponentUI(getEmailInputText());
-        services.refreshComponentUI(getManagerIdInputText());
-        
-        }
-    
-    
-    private boolean requiredsFieldsValidated(){
-        
-        return getEmailInputText().isRequired() && getManagerIdInputText().isRequired();
-        
-        } 
+        services.refreshComponentUI(getHireDateInputText());
+        services.refreshComponentUI(getJobIdInputText());
+
+    }
+
+
+    private boolean requiredsFieldsValidated() {
+
+        return getEmailInputText().isRequired() && getLastNameInputText().isRequired()
+            && getHireDateInputText().isRequired() && getJobIdInputText().isRequired();
+
+    }
+
     private boolean callValidationData(Row[] rows) {
         for (Row row : rows) {
             String email = (String) row.getAttribute(Template.EMPLOYEE_EMAIL);
             String managerId = (String) row.getAttribute(Template.EMPLOYEE_MANAGER_ID);
 
-           // boolean emailVal = validation.emailValidator(email);
+            // boolean emailVal = validation.emailValidator(email);
             if (StringUtils.isBlank(managerId)) {
                 shoeInlineMessage("manager ID should not be empty !");
                 return false;
-            }  if (StringUtils.isBlank(email)) {
+            }
+            if (StringUtils.isBlank(email)) {
                 shoeInlineMessage("Email should not be empty !");
                 return false;
             }
@@ -349,20 +375,36 @@ public class CsvFileUploadMB extends AbstractMBConfig{
         }
         return true;
     }
- 
+
     public void emailValidator(FacesContext facesContext, UIComponent uIComponent, Object object) {
         String email_address = object.toString();
         String email_pattern = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
         if (!StringUtils.isBlank(email_address)) {
-                Pattern patn = Pattern.compile(email_pattern);
-                Matcher matcher = patn.matcher(email_address);
+            Pattern patn = Pattern.compile(email_pattern);
+            Matcher matcher = patn.matcher(email_address);
 
-                String Error_Message = "You have entered an invalid email address. Please try again.";
+            String Error_Message = "You have entered an invalid email address. Please try again.";
 
-                if (!matcher.matches()) {
-                    throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, Error_Message, null));
-                }
+            if (!matcher.matches()) {
+                throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, Error_Message, null));
             }
+        }
+    }
+
+    public void phonevalidator(FacesContext facesContext, UIComponent uIComponent, Object object) {
+        String phoneNumber = object.toString();
+        String phone_pattern = "^\\(?([0-9]{3})\\)?[-.\\s]?([0-9]{4})[-.\\s]?([0-9]{4})$";
+        if (!StringUtils.isBlank(phoneNumber)) {
+            Pattern patn = Pattern.compile(phone_pattern);
+            Matcher matcher = patn.matcher(phoneNumber);
+
+            String Error_Message = "You have entered an invalid phone number. Please try again.";
+
+            if (!matcher.matches()) {
+                throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, Error_Message, null));
+            }
+        }
+
     }
 
     /*
@@ -598,20 +640,28 @@ public class CsvFileUploadMB extends AbstractMBConfig{
         return validation;
     }
 
-    public void setIsRequiredField(boolean isRequiredField) {
-        this.isRequiredField = isRequiredField;
+
+    public void setLastNameInputText(RichInputText lastNameInputText) {
+        this.lastNameInputText = lastNameInputText;
     }
 
-    public boolean isIsRequiredField() {
-        return isRequiredField;
+    public RichInputText getLastNameInputText() {
+        return lastNameInputText;
     }
 
-
-    public void setManagerIdInputText(RichInputText managerIdInputText) {
-        this.managerIdInputText = managerIdInputText;
+    public void setHireDateInputText(RichInputText hireDateInputText) {
+        this.hireDateInputText = hireDateInputText;
     }
 
-    public RichInputText getManagerIdInputText() {
-        return managerIdInputText;
+    public RichInputText getHireDateInputText() {
+        return hireDateInputText;
+    }
+
+    public void setJobIdInputText(RichInputText jobIdInputText) {
+        this.jobIdInputText = jobIdInputText;
+    }
+
+    public RichInputText getJobIdInputText() {
+        return jobIdInputText;
     }
 }
