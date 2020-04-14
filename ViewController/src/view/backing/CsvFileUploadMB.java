@@ -313,13 +313,9 @@ public class CsvFileUploadMB extends AbstractMBConfig {
     private void setRequiredFieldsToTrue() {
         System.out.println("Set manadatories fiels ....");
         getLastNameInputText().setRequired(true);
-        getLastNameInputText().setValid(true);
         getEmailInputText().setRequired(true);
-        getEmailInputText().setValid(true);
         getHireDateInputText().setRequired(true);
-        getHireDateInputText().setValid(true);
         getJobIdInputText().setRequired(true);
-        getJobIdInputText().setValid(true);
         services.refreshComponentUI(getLastNameInputText());
         shoeInlineMessage("Please check required fields !");
         services.refreshComponentUI(getEmailInputText());
@@ -331,25 +327,20 @@ public class CsvFileUploadMB extends AbstractMBConfig {
 
 
     }
-
+ 
     private void setRequiredFieldsToFalse() {
         System.out.println("Set manadatories fiels to false....");
         getLastNameInputText().setRequired(false);
-        getLastNameInputText().setValid(false);
         getEmailInputText().setRequired(false);
-        getEmailInputText().setValid(false);
         getHireDateInputText().setRequired(false);
-        getHireDateInputText().setValid(false);
         getJobIdInputText().setRequired(false);
-        getJobIdInputText().setValid(false);
         services.refreshComponentUI(getLastNameInputText());
         services.refreshComponentUI(getEmailInputText());
         services.refreshComponentUI(getHireDateInputText());
         services.refreshComponentUI(getJobIdInputText());
 
     }
-
-
+ 
     private boolean requiredsFieldsValidated() {
 
         return getEmailInputText().isRequired() && getLastNameInputText().isRequired()

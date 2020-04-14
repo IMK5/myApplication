@@ -10,8 +10,7 @@
                 <af:outputFormatted value="Your changes have been saved" id="of1"/>
             </af:panelGroupLayout>
         </af:popup>
-        <af:messages id="m1"/>
-        <!-- <af:message for="uploadForm" infoStyle="color: green;" errorStyle="color: red;" id="msg"/>-->
+       
         <af:form id="uploadForm" usesUpload="true">
             <af:pageTemplate viewId="/oracle/templates/threeColumnTemplate.jspx" id="pt1">
                 <f:facet name="center">
@@ -44,7 +43,9 @@
                                        destination="updateErrorDataStructure.jsf" id="gl1"
                                        visible="#{csvFileUploadMB.fileInfoDto.errorRecordsNumber > 0 ? 'true': 'false'}"/>
                         </af:panelBox>
-                        <af:spacer width="10" height="25"/>
+                    <af:spacer width="10" height="25"/>
+                    <af:messages id="msg" globalOnly="true" inline="true" inlineStyle="color:#ff4242;"/>
+                    <af:spacer width="10" height="25"/>
                         <af:table value="#{bindings.EmployeesDraftView12.collectionModel}" var="row"
                                   rows="#{bindings.EmployeesDraftView12.rangeSize}"
                                   binding="#{csvFileUploadMB.draftTable}"  
@@ -64,7 +65,6 @@
                                        headerText="#{bindings.EmployeesDraftView12.hints.EmployeeId.label}" id="c1">
                                 <af:inputText value="#{row.bindings.EmployeeId.inputValue}"
                                               label="#{bindings.EmployeesDraftView12.hints.EmployeeId.label}"
-                                              required="#{bindings.EmployeesDraftView12.hints.EmployeeId.mandatory}"
                                               columns="#{bindings.EmployeesDraftView12.hints.EmployeeId.displayWidth}"
                                               maximumLength="#{bindings.EmployeesDraftView12.hints.EmployeeId.precision}"
                                               shortDesc="#{bindings.EmployeesDraftView12.hints.EmployeeId.tooltip}"
@@ -90,7 +90,8 @@
                                        headerText="#{bindings.EmployeesDraftView12.hints.LastName.label}" id="c3">
                                 <af:inputText value="#{row.bindings.LastName.inputValue}"
                                               label="#{bindings.EmployeesDraftView12.hints.LastName.label}"
-                                              required="#{bindings.EmployeesDraftView12.hints.LastName.mandatory}"
+                                              binding="#{csvFileUploadMB.lastNameInputText}"
+                                              partialTriggers="::bSubmit"
                                               columns="#{bindings.EmployeesDraftView12.hints.LastName.displayWidth}"
                                               maximumLength="#{bindings.EmployeesDraftView12.hints.LastName.precision}"
                                               shortDesc="#{bindings.EmployeesDraftView12.hints.LastName.tooltip}"
@@ -103,7 +104,7 @@
                                        headerText="#{bindings.EmployeesDraftView12.hints.Email.label}" id="c4">
                                 <af:inputText value="#{row.bindings.Email.inputValue}"
                                               label="#{bindings.EmployeesDraftView12.hints.Email.label}"
-                                              required="#{bindings.EmployeesDraftView12.hints.Email.mandatory}"
+                                              binding="#{csvFileUploadMB.emailInputText}"
                                               columns="#{bindings.EmployeesDraftView12.hints.Email.displayWidth}"
                                               maximumLength="#{bindings.EmployeesDraftView12.hints.Email.precision}"
                                               shortDesc="#{bindings.EmployeesDraftView12.hints.Email.tooltip}" id="it4" autoSubmit="true">
@@ -115,7 +116,6 @@
                                        headerText="#{bindings.EmployeesDraftView12.hints.PhoneNumber.label}" id="c5">
                                 <af:inputText value="#{row.bindings.PhoneNumber.inputValue}"
                                               label="#{bindings.EmployeesDraftView12.hints.PhoneNumber.label}"
-                                              required="#{bindings.EmployeesDraftView12.hints.PhoneNumber.mandatory}"
                                               columns="#{bindings.EmployeesDraftView12.hints.PhoneNumber.displayWidth}"
                                               maximumLength="#{bindings.EmployeesDraftView12.hints.PhoneNumber.precision}"
                                               shortDesc="#{bindings.EmployeesDraftView12.hints.PhoneNumber.tooltip}"
@@ -127,8 +127,9 @@
                                        filterable="true" sortable="true"
                                        headerText="#{bindings.EmployeesDraftView12.hints.HireDate.label}" id="c6">
                                 <af:inputText value="#{row.bindings.HireDate.inputValue}"
+                                              binding="#{csvFileUploadMB.hireDateInputText}"
+                                              partialTriggers="::bSubmit"
                                               label="#{bindings.EmployeesDraftView12.hints.HireDate.label}"
-                                              required="#{bindings.EmployeesDraftView12.hints.HireDate.mandatory}"
                                               columns="#{bindings.EmployeesDraftView12.hints.HireDate.displayWidth}"
                                               maximumLength="#{bindings.EmployeesDraftView12.hints.HireDate.precision}"
                                               shortDesc="#{bindings.EmployeesDraftView12.hints.HireDate.tooltip}"
@@ -141,7 +142,8 @@
                                        headerText="#{bindings.EmployeesDraftView12.hints.JobId.label}" id="c7">
                                 <af:inputText value="#{row.bindings.JobId.inputValue}"
                                               label="#{bindings.EmployeesDraftView12.hints.JobId.label}"
-                                              required="#{bindings.EmployeesDraftView12.hints.JobId.mandatory}"
+                                               partialTriggers="::bSubmit"
+                                                binding="#{csvFileUploadMB.jobIdInputText}"
                                               columns="#{bindings.EmployeesDraftView12.hints.JobId.displayWidth}"
                                               maximumLength="#{bindings.EmployeesDraftView12.hints.JobId.precision}"
                                               shortDesc="#{bindings.EmployeesDraftView12.hints.JobId.tooltip}" id="it7"
@@ -154,7 +156,6 @@
                                        headerText="#{bindings.EmployeesDraftView12.hints.Salary.label}" id="c8">
                                 <af:inputText value="#{row.bindings.Salary.inputValue}"
                                               label="#{bindings.EmployeesDraftView12.hints.Salary.label}"
-                                              required="#{bindings.EmployeesDraftView12.hints.Salary.mandatory}"
                                               columns="#{bindings.EmployeesDraftView12.hints.Salary.displayWidth}"
                                               maximumLength="#{bindings.EmployeesDraftView12.hints.Salary.precision}"
                                               shortDesc="#{bindings.EmployeesDraftView12.hints.Salary.tooltip}"
@@ -167,7 +168,6 @@
                                        headerText="#{bindings.EmployeesDraftView12.hints.CommissionPct.label}" id="c9">
                                 <af:inputText value="#{row.bindings.CommissionPct.inputValue}"
                                               label="#{bindings.EmployeesDraftView12.hints.CommissionPct.label}"
-                                              required="#{bindings.EmployeesDraftView12.hints.CommissionPct.mandatory}"
                                               columns="#{bindings.EmployeesDraftView12.hints.CommissionPct.displayWidth}"
                                               maximumLength="#{bindings.EmployeesDraftView12.hints.CommissionPct.precision}"
                                               shortDesc="#{bindings.EmployeesDraftView12.hints.CommissionPct.tooltip}"
@@ -180,7 +180,6 @@
                                        headerText="#{bindings.EmployeesDraftView12.hints.ManagerId.label}" id="c10">
                                 <af:inputText value="#{row.bindings.ManagerId.inputValue}"
                                               label="#{bindings.EmployeesDraftView12.hints.ManagerId.label}"
-                                              required="#{bindings.EmployeesDraftView12.hints.ManagerId.mandatory}"
                                               columns="#{bindings.EmployeesDraftView12.hints.ManagerId.displayWidth}"
                                               maximumLength="#{bindings.EmployeesDraftView12.hints.ManagerId.precision}"
                                               shortDesc="#{bindings.EmployeesDraftView12.hints.ManagerId.tooltip}"
@@ -193,7 +192,6 @@
                                        headerText="#{bindings.EmployeesDraftView12.hints.DepartmentId.label}" id="c11">
                                 <af:inputText value="#{row.bindings.DepartmentId.inputValue}"
                                               label="#{bindings.EmployeesDraftView12.hints.DepartmentId.label}"
-                                              required="#{bindings.EmployeesDraftView12.hints.DepartmentId.mandatory}"
                                               columns="#{bindings.EmployeesDraftView12.hints.DepartmentId.displayWidth}"
                                               maximumLength="#{bindings.EmployeesDraftView12.hints.DepartmentId.precision}"
                                               shortDesc="#{bindings.EmployeesDraftView12.hints.DepartmentId.tooltip}"
@@ -203,17 +201,24 @@
                             </af:column>
                         </af:table>
                         <af:panelBox id="pSave">
-                            <af:button text="Save" id="bSave" autoSubmit="true" immediate="true"
+                            <af:button text="Save" id="bSave"  immediate="true"
                                        action="#{csvFileUploadMB.bSave_action}"/>
-                           <af:button text="Submit" id="bSubmit" autoSubmit="true" immediate="true"
+                           <af:button text="Submit" id="bSubmit"  
                                        action="#{csvFileUploadMB.submit_action}"/>
                         </af:panelBox>
                     </af:panelFormLayout>
                 </f:facet>
                 <f:facet name="header"/>
                 <f:facet name="end"/>
-                <f:facet name="start"></f:facet>
-                <f:facet name="branding"/>
+                <f:facet name="start">
+                    <af:panelList id="pl1">
+                        <af:link text="Upload CSV file" destination="uploadFile.jsf" id="ucf"/>
+                        <af:link text="Manage structure data" destination="updateErrorDataStructure.jsf" id="msd"/>
+                        <af:link text="Manage error data" destination="validationData.jsf" id="med"/>
+                    </af:panelList>
+                </f:facet>
+                <f:facet name="branding">
+                </f:facet>
                 <f:facet name="copyright"/>
                 <f:facet name="status"/>
             </af:pageTemplate>
